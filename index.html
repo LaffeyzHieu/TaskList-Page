@@ -5,90 +5,235 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Project Feed 🐢</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a18;min-height:100vh}
-.wrap{max-width:600px;margin:0 auto;padding:1.5rem 1rem}
-h1{font-size:20px;font-weight:500;margin-bottom:1.5rem;color:#1a1a18}
-.card{background:#fff;border:0.5px solid #ddd;border-radius:12px;padding:1.25rem;margin-bottom:1.25rem}
-textarea,input[type=text]{width:100%;padding:10px 12px;border-radius:8px;border:0.5px solid #ccc;background:#f9f9f7;color:#1a1a18;font-size:14px;font-family:inherit}
-textarea{resize:vertical;min-height:80px}
-textarea:focus,input[type=text]:focus{outline:none;box-shadow:0 0 0 2px #3b82f6}
-.row{display:flex;gap:8px;align-items:center;margin-top:8px}
-.btn{padding:9px 16px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:14px;cursor:pointer;font-weight:500;font-family:inherit;white-space:nowrap}
-.btn:hover{background:#2563eb}
-.btn:disabled{opacity:0.5;cursor:not-allowed}
-.btn-ghost{background:#f0f0ec;color:#1a1a18;border:0.5px solid #ccc}
-.btn-ghost:hover{background:#e8e8e4}
-.file-input{display:none}
-.preview{width:100%;max-height:240px;border-radius:8px;object-fit:contain;background:#f0f0ec;margin-top:8px;display:none}
-.file-name{font-size:13px;color:#888;margin-left:4px}
-.post-card{background:#fff;border:0.5px solid #ddd;border-radius:12px;overflow:hidden;margin-bottom:1rem}
-.post-header{padding:1rem 1.25rem;border-bottom:0.5px solid #eee;display:flex;justify-content:space-between;align-items:flex-start}
-.author{font-weight:500;font-size:14px}
-.ptime{font-size:12px;color:#999;margin-top:2px}
-.post-img{width:100%;max-height:420px;object-fit:cover;background:#f0f0ec;display:block}
-.caption{padding:1rem 1.25rem;font-size:14px;line-height:1.55;word-break:break-word}
-.comments-wrap{padding:0 1.25rem 1rem;border-top:0.5px solid #eee;margin-top:0}
-.cmt{padding:8px 0;border-bottom:0.5px solid #f0f0ec}
-.cmt:last-of-type{border-bottom:none}
-.cmt-author{font-size:12px;font-weight:500;margin-bottom:2px}
-.cmt-text{font-size:13px;color:#555;word-break:break-word}
-.cmt-time{font-size:11px;color:#aaa;margin-top:2px}
-.add-cmt{display:flex;gap:6px;margin-top:12px}
-.add-cmt input{flex:1;padding:7px 10px;border-radius:8px;border:0.5px solid #ccc;font-size:13px;background:#f9f9f7;font-family:inherit}
-.add-cmt button{padding:7px 12px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:12px;cursor:pointer;font-weight:500;font-family:inherit}
-.add-cmt button:hover{background:#2563eb}
-.add-cmt button:disabled{opacity:0.5;cursor:not-allowed}
-.empty{text-align:center;padding:3rem 1rem;color:#aaa;font-size:14px}
-.error{background:#fef2f2;border:0.5px solid #fca5a5;border-radius:8px;padding:1rem;margin-bottom:1rem;color:#b91c1c;font-size:13px}
-.success{background:#f0fdf4;border:0.5px solid #86efac;border-radius:8px;padding:.75rem 1rem;font-size:13px;color:#166534}
-.label{font-size:13px;color:#666;margin-bottom:6px;display:block}
-.gap{margin-top:12px}
-.feed-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
-.feed-title{font-size:16px;font-weight:500}
+  /* Biến CSS cho Dark/Light Mode */
+  :root {
+    --bg-color: #f0f2f5;
+    --card-bg: #ffffff;
+    --text-color: #1c1e21;
+    --text-secondary: #65676b;
+    --border-color: #ced0d4;
+    --input-bg: #f0f2f5;
+    --primary: #1877f2;
+    --primary-hover: #166fe5;
+    --danger: #e41e3f;
+    --success: #42b72a;
+  }
+  [data-theme="dark"] {
+    --bg-color: #18191a;
+    --card-bg: #242526;
+    --text-color: #e4e6eb;
+    --text-secondary: #b0b3b8;
+    --border-color: #393a3b;
+    --input-bg: #3a3b3c;
+    --primary: #2d88ff;
+    --primary-hover: #247bff;
+    --danger: #ff4d6d;
+    --success: #42b72a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    min-height: 100vh;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  /* Header */
+  header {
+    background: var(--card-bg);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .header-wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header-wrap h1 { font-size: 1.3rem; font-weight: 700; color: var(--primary); }
+  .theme-toggle {
+    background: var(--input-bg);
+    color: var(--text-color);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .theme-toggle:hover { opacity: 0.8; }
+
+  /* Main Layout */
+  .wrap { max-width: 680px; margin: 1rem auto; padding: 0 1rem 3rem; }
+
+  /* Cards */
+  .card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    border: 1px solid var(--border-color);
+  }
+
+  /* Inputs */
+  textarea, input[type=text] {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-color);
+    font-size: 15px;
+    font-family: inherit;
+    resize: none;
+  }
+  textarea:focus, input[type=text]:focus { outline: none; border-color: var(--primary); }
+  textarea:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Buttons */
+  .btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .btn:hover { background: var(--primary-hover); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-ghost { background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); }
+  .btn-ghost:hover { background: var(--border-color); }
+  
+  .row { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+  .file-input { display: none; }
+  .preview { width: 100%; max-height: 300px; border-radius: 8px; object-fit: contain; margin-top: 12px; display: none; background: var(--input-bg); }
+
+  /* Name Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+  }
+  .modal-content {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  .modal-content h2 { margin-bottom: 0.5rem; }
+  .modal-content p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 14px; }
+  .modal-content input { margin-bottom: 1rem; text-align: center; }
+
+  /* Post Item */
+  .post-card { background: var(--card-bg); border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 1rem; border: 1px solid var(--border-color); overflow: hidden; }
+  .post-header { padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; }
+  .author-info .author { font-weight: 600; font-size: 15px; }
+  .author-info .ptime { font-size: 12px; color: var(--text-secondary); }
+  .post-img { width: 100%; display: block; background: var(--input-bg); }
+  .caption { padding: 12px 16px 0; font-size: 15px; line-height: 1.5; word-break: break-word; }
+
+  /* Action Bar (Like/Dislike/Comment) */
+  .actions { display: flex; border-top: 1px solid var(--border-color); margin-top: 12px; }
+  .action-btn {
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 14px;
+  }
+  .action-btn:hover { background: var(--input-bg); }
+  .action-btn.active-like { color: var(--primary); }
+  .action-btn.active-dislike { color: var(--danger); }
+  .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Comments */
+  .comments-section { padding: 0 16px 16px; }
+  .cmt { padding: 8px 12px; background: var(--input-bg); border-radius: 12px; margin-bottom: 8px; }
+  .cmt-author { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .cmt-text { font-size: 14px; color: var(--text-color); }
+  .cmt-time { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+  .add-cmt { display: flex; gap: 8px; margin-top: 8px; }
+  .add-cmt input { flex: 1; padding: 8px 12px; font-size: 14px; }
+
+  /* Utilities */
+  .error { background: rgba(228, 30, 63, 0.1); color: var(--danger); padding: 10px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; display: none; }
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--text-secondary); }
+  .locked-msg { font-size: 12px; color: var(--text-secondary); font-style: italic; margin-top: 8px; text-align: center; display: none; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>Project Feed 🐢</h1>
 
+<!-- Name Setup Modal -->
+<div id="name-modal" class="modal-overlay">
+  <div class="modal-content">
+    <h2>🐢 Chào mừng đến Project Feed</h2>
+    <p>Hãy nhập tên của bạn để có thể đăng bài, bình luận và tương tác. Nếu bỏ qua, bạn chỉ có thể xem bài viết dưới dạng ẩn danh.</p>
+    <input type="text" id="username-input" placeholder="Nhập tên của bạn..." maxlength="30">
+    <button class="btn" style="width:100%; margin-bottom:8px;" onclick="saveName()">Bắt đầu tương tác</button>
+    <button class="btn btn-ghost" style="width:100%;" onclick="skipName()">Bỏ qua (Chỉ xem)</button>
+  </div>
+</div>
+
+<header>
+  <div class="header-wrap">
+    <h1>Project Feed 🐢</h1>
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙 Dark Mode</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- Firebase Config Section (Auto hide if saved) -->
   <div class="card" id="config-card">
-    <span class="label"><b>Firebase Config</b> — paste vào, chỉ cần 1 lần</span>
-    <textarea id="config-input" placeholder='const firebaseConfig = {
-  apiKey: "AIzaSy...",
-  authDomain: "project.firebaseapp.com",
-  projectId: "project-id",
-  storageBucket: "project.firebasestorage.app",
-  messagingSenderId: "...",
-  appId: "..."
-};'></textarea>
-    <div class="row">
-      <button class="btn" onclick="saveConfig()">Kết nối Firebase</button>
-      <span id="config-status" style="font-size:13px;color:#888"></span>
+    <b>Kết nối Firebase</b> <span style="color:var(--text-secondary); font-size:13px;">(Chỉ làm 1 lần)</span>
+    <textarea id="config-input" style="margin-top:8px; height:100px;" placeholder='const firebaseConfig = { apiKey: "...", projectId: "..." };'></textarea>
+    <div class="row" style="margin-top:8px; justify-content: flex-end;">
+      <button class="btn" onclick="saveConfig()">Kết nối</button>
     </div>
   </div>
 
   <div id="app" style="display:none">
+    <!-- Post Creation -->
     <div class="card">
-      <span class="label">Đăng bài mới</span>
-      <textarea id="caption" placeholder="Vừa xong PCB, hàn xong rồi nè! 🎉"></textarea>
-      <div class="row gap">
-        <button class="btn btn-ghost" type="button" onclick="document.getElementById('image').click()">📷 Chọn ảnh</button>
-        <span class="file-name" id="file-name">Không có ảnh</span>
+      <textarea id="caption" placeholder="Hôm nay dự án tiến triển thế nào? 🚀" rows="3"></textarea>
+      <img id="preview" class="preview">
+      <div class="row">
+        <button class="btn btn-ghost" type="button" onclick="document.getElementById('image').click()">📷 Ảnh</button>
+        <span style="color:var(--text-secondary); font-size:13px;" id="file-name">Chưa có ảnh</span>
+        <button class="btn" style="margin-left:auto;" onclick="postNow()" id="post-btn">Đăng bài</button>
       </div>
       <input type="file" id="image" class="file-input" accept="image/*">
-      <img id="preview" class="preview">
-      <div class="row gap">
-        <input type="text" id="author" placeholder="Tên của bạn..." maxlength="50" style="flex:1">
-        <button class="btn" onclick="postNow()" id="post-btn">Đăng</button>
-      </div>
+      <div class="locked-msg" id="post-locked">🔒 Vui lòng đặt tên để đăng bài.</div>
     </div>
 
-    <div id="error-box"></div>
+    <div class="error" id="error-box"></div>
 
-    <div class="feed-header">
-      <span class="feed-title">Feed của nhóm</span>
-    </div>
+    <!-- Feed -->
     <div id="feed"></div>
   </div>
 </div>
@@ -100,7 +245,60 @@ import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/1
 
 const MAX_DIM = 1080;
 let db, auth;
+let currentUserName = localStorage.getItem('userName') || null;
 
+// Handle Theme
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  document.getElementById('theme-btn').textContent = savedTheme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+}
+window.toggleTheme = () => {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+  document.getElementById('theme-btn').textContent = next === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+};
+
+// Handle User Name
+window.saveName = () => {
+  const name = document.getElementById('username-input').value.trim();
+  if(!name) { alert('Vui lòng nhập tên!'); return; }
+  currentUserName = name;
+  localStorage.setItem('userName', name);
+  document.getElementById('name-modal').style.display = 'none';
+  updateUIAccess();
+};
+
+window.skipName = () => {
+  currentUserName = null;
+  localStorage.removeItem('userName');
+  document.getElementById('name-modal').style.display = 'none';
+  updateUIAccess();
+};
+
+function updateUIAccess() {
+  const isLocked = !currentUserName;
+  document.getElementById('caption').disabled = isLocked;
+  document.getElementById('post-btn').disabled = isLocked;
+  document.getElementById('post-locked').style.display = isLocked ? 'block' : 'none';
+  
+  // Lock/Unlock all comment inputs and react buttons
+  document.querySelectorAll('.add-cmt input').forEach(i => i.disabled = isLocked);
+  document.querySelectorAll('.action-btn').forEach(b => b.disabled = isLocked);
+}
+
+function checkNameOnLoad() {
+  if(!currentUserName) {
+    document.getElementById('name-modal').style.display = 'flex';
+  } else {
+    document.getElementById('name-modal').style.display = 'none';
+  }
+  updateUIAccess();
+}
+
+// Firebase Setup
 function cleanAndParse(raw){
   raw = raw.replace(/\/\/.*$/gm,'').replace(/\/\*[\s\S]*?\*\//g,'');
   raw = raw.replace(/,(\s*[}\]])/g,'$1');
@@ -110,7 +308,7 @@ function cleanAndParse(raw){
   return JSON.parse(m[0]);
 }
 
-function saveConfig(){
+window.saveConfig = () => {
   const raw = document.getElementById('config-input').value.trim();
   if(!raw) return;
   try{
@@ -119,10 +317,9 @@ function saveConfig(){
     localStorage.setItem('fbConfig', JSON.stringify(config));
     startApp(config);
   } catch(e){
-    document.getElementById('config-status').textContent = '❌ '+e.message;
+    showErr('Lỗi config: '+e.message);
   }
-}
-window.saveConfig = saveConfig;
+};
 
 function startApp(config){
   try{
@@ -134,7 +331,7 @@ function startApp(config){
       document.getElementById('app').style.display='block';
       listenFeed();
       setupImageInput();
-    }).catch(e=>showErr('Auth lỗi: '+e.message));
+    }).catch(e=>showErr('Auth lỗi (Hãy bật Anonymous Auth trong Firebase): '+e.message));
   } catch(e){
     showErr('Init lỗi: '+e.message);
   }
@@ -167,65 +364,89 @@ async function resizeEncode(file){
       }
       canvas.width=w;canvas.height=h;
       canvas.getContext('2d').drawImage(img,0,0,w,h);
-      resolve(canvas.toDataURL('image/jpeg',0.82));
+      resolve(canvas.toDataURL('image/jpeg',0.85));
     };
     img.src = URL.createObjectURL(file);
   });
 }
 
-async function postNow(){
+window.postNow = async () => {
+  if(!currentUserName) { showErr('Vui lòng đặt tên trước khi đăng bài!'); return; }
   const caption = document.getElementById('caption').value.trim();
-  const author = document.getElementById('author').value.trim()||'Anonymous';
   const imgEl = document.getElementById('image');
-  if(!caption&&!imgEl.files[0]){ showErr('Viết gì đó hoặc post ảnh đi!'); return; }
+  if(!caption&&!imgEl.files[0]){ showErr('Viết gì đó hoặc chọn ảnh đi!'); return; }
+  
   const btn = document.getElementById('post-btn');
   btn.disabled=true;btn.textContent='Đang đăng...';
   let imageBase64=null;
   if(imgEl.files[0]) imageBase64 = await resizeEncode(imgEl.files[0]);
+  
   try{
-    await addDoc(collection(db,'posts'),{caption,author,imageBase64,timestamp:Date.now(),comments:[]});
+    await addDoc(collection(db,'posts'),{
+      author: currentUserName, 
+      caption, imageBase64, 
+      timestamp: Date.now(), 
+      comments: [], 
+      likes: [], 
+      dislikes: [] 
+    });
     document.getElementById('caption').value='';
-    document.getElementById('author').value='';
     document.getElementById('preview').style.display='none';
-    document.getElementById('file-name').textContent='Không có ảnh';
+    document.getElementById('file-name').textContent='Chưa có ảnh';
     imgEl.value='';
   } catch(e){ showErr('Đăng lỗi: '+e.message); }
-  btn.disabled=false;btn.textContent='Đăng';
-}
-window.postNow = postNow;
+  btn.disabled=false;btn.textContent='Đăng bài';
+};
 
 function fmtTime(ts){
-  const diff=Date.now()-ts,m=Math.floor(diff/60000),h=Math.floor(diff/3600000),d=Math.floor(diff/86400000);
-  if(diff<60000)return'vừa xong';
-  if(m<60)return m+'m trước';
-  if(h<24)return h+'h trước';
-  if(d<7)return d+'d trước';
+  const diff=Date.now()-ts, m=Math.floor(diff/60000), h=Math.floor(diff/3600000), d=Math.floor(diff/86400000);
+  if(diff<60000)return'Vừa xong';
+  if(m<60)return m+' phút trước';
+  if(h<24)return h+' giờ trước';
+  if(d<7)return d+' ngày trước';
   return new Date(ts).toLocaleDateString('vi-VN');
 }
 
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-function renderPost(id,post){
+function renderPost(id, post){
   const cmts=(post.comments||[]).map(c=>`
     <div class="cmt">
       <div class="cmt-author">${esc(c.author)}</div>
       <div class="cmt-text">${esc(c.text)}</div>
       <div class="cmt-time">${fmtTime(c.timestamp)}</div>
     </div>`).join('');
+
+  const likes = post.likes || [];
+  const dislikes = post.dislikes || [];
+  const liked = likes.includes(currentUserName);
+  const disliked = dislikes.includes(currentUserName);
+
   return `<div class="post-card" data-id="${id}">
     <div class="post-header">
-      <div>
+      <div class="avatar">${esc(post.author.charAt(0).toUpperCase())}</div>
+      <div class="author-info">
         <div class="author">${esc(post.author)}</div>
         <div class="ptime">${fmtTime(post.timestamp)}</div>
       </div>
     </div>
-    ${post.imageBase64?`<img src="${post.imageBase64}" class="post-img" alt="">`:''}
     ${post.caption?`<div class="caption">${esc(post.caption)}</div>`:''}
-    <div class="comments-wrap">
+    ${post.imageBase64?`<img src="${post.imageBase64}" class="post-img" alt="">`:''}
+    
+    <div class="actions">
+      <button class="action-btn ${liked?'active-like':''}" onclick="toggleReact('${id}', 'like')" ${!currentUserName?'disabled':''}>
+        👍 Đồng ý ${likes.length>0?`(${likes.length})`:''}
+      </button>
+      <button class="action-btn ${disliked?'active-dislike':''}" onclick="toggleReact('${id}', 'dislike')" ${!currentUserName?'disabled':''}>
+        👎 Không đồng ý ${dislikes.length>0?`(${dislikes.length})`:''}
+      </button>
+    </div>
+
+    <div class="comments-section">
       ${cmts}
       <div class="add-cmt">
-        <input type="text" placeholder="Comment..." class="cmt-input" maxlength="200">
-        <button onclick="sendComment('${id}')">Gửi</button>
+        <input type="text" placeholder="Viết bình luận..." class="cmt-input" maxlength="200" onkeydown="if(event.key==='Enter') sendComment('${id}')" ${!currentUserName?'disabled':''}>
+        <button class="btn" style="padding:8px 12px;" onclick="sendComment('${id}')" ${!currentUserName?'disabled':''}>Gửi</button>
       </div>
     </div>
   </div>`;
@@ -235,40 +456,76 @@ function listenFeed(){
   const q = query(collection(db,'posts'),orderBy('timestamp','desc'));
   onSnapshot(q, snap=>{
     const feed = document.getElementById('feed');
-    if(snap.empty){ feed.innerHTML='<div class="empty">Chưa có bài nào, đăng thứ đầu tiên đi! 🐢</div>'; return; }
+    if(snap.empty){ 
+      feed.innerHTML='<div class="empty">Chưa có bài đăng nào. Hãy là người đầu tiên chia sẻ nhé! 🐢</div>'; 
+      return; 
+    }
     feed.innerHTML = snap.docs.map(d=>renderPost(d.id,d.data())).join('');
-    feed.querySelectorAll('.cmt-input').forEach(inp=>{
-      inp.addEventListener('keydown',e=>{ if(e.key==='Enter') sendComment(inp.closest('.post-card').dataset.id); });
-    });
+    updateUIAccess(); // Ensure locks are applied to newly rendered posts
   }, e=>showErr('Feed lỗi: '+e.message));
 }
 
-async function sendComment(postId){
+window.sendComment = async (postId) => {
+  if(!currentUserName) { showErr('Vui lòng đặt tên để bình luận!'); return; }
   const inp = document.querySelector(`.post-card[data-id="${postId}"] .cmt-input`);
   const text = inp.value.trim();
   if(!text) return;
-  const btn = inp.nextElementSibling;
-  btn.disabled=true;
   try{
     const ref = doc(db,'posts',postId);
     const snap = await getDoc(ref);
     const comments = snap.data().comments||[];
-    comments.push({author:'Anonymous',text,timestamp:Date.now()});
+    comments.push({author: currentUserName, text, timestamp: Date.now()});
     await updateDoc(ref,{comments});
     inp.value='';
   } catch(e){ showErr('Comment lỗi: '+e.message); }
-  btn.disabled=false;
-}
-window.sendComment = sendComment;
+};
+
+window.toggleReact = async (postId, type) => {
+  if(!currentUserName) { showErr('Vui lòng đặt tên để tương tác!'); return; }
+  try {
+    const ref = doc(db, 'posts', postId);
+    const snap = await getDoc(ref);
+    const data = snap.data();
+    let likes = data.likes || [];
+    let dislikes = data.dislikes || [];
+
+    if (type === 'like') {
+      if (likes.includes(currentUserName)) {
+        likes = likes.filter(u => u !== currentUserName);
+      } else {
+        likes.push(currentUserName);
+        dislikes = dislikes.filter(u => u !== currentUserName);
+      }
+    } else {
+      if (dislikes.includes(currentUserName)) {
+        dislikes = dislikes.filter(u => u !== currentUserName);
+      } else {
+        dislikes.push(currentUserName);
+        likes = likes.filter(u => u !== currentUserName);
+      }
+    }
+    await updateDoc(ref, { likes, dislikes });
+  } catch(e) { showErr('Lỗi tương tác: '+e.message); }
+};
 
 function showErr(msg){
   const box=document.getElementById('error-box');
-  box.innerHTML=`<div class="error">${msg}</div>`;
-  setTimeout(()=>box.innerHTML='',5000);
+  box.style.display = 'block';
+  box.textContent = msg;
+  setTimeout(()=>{ box.style.display = 'none'; box.textContent=''; }, 5000);
 }
 
-const saved=localStorage.getItem('fbConfig');
-if(saved){ try{ startApp(JSON.parse(saved)); }catch(e){} }
+// Init
+initTheme();
+checkNameOnLoad();
+
+const savedConfig = localStorage.getItem('fbConfig');
+if(savedConfig){ 
+  try{ 
+    document.getElementById('config-card').style.display='none';
+    startApp(JSON.parse(savedConfig)); 
+  } catch(e){} 
+}
 </script>
 </body>
 </html>
