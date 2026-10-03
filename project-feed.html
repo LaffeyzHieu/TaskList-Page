@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Feed 🐢</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a18;min-height:100vh}
+.wrap{max-width:600px;margin:0 auto;padding:1.5rem 1rem}
+h1{font-size:20px;font-weight:500;margin-bottom:1.5rem;color:#1a1a18}
+.card{background:#fff;border:0.5px solid #ddd;border-radius:12px;padding:1.25rem;margin-bottom:1.25rem}
+textarea,input[type=text]{width:100%;padding:10px 12px;border-radius:8px;border:0.5px solid #ccc;background:#f9f9f7;color:#1a1a18;font-size:14px;font-family:inherit}
+textarea{resize:vertical;min-height:80px}
+textarea:focus,input[type=text]:focus{outline:none;box-shadow:0 0 0 2px #3b82f6}
+.row{display:flex;gap:8px;align-items:center;margin-top:8px}
+.btn{padding:9px 16px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:14px;cursor:pointer;font-weight:500;font-family:inherit;white-space:nowrap}
+.btn:hover{background:#2563eb}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.btn-ghost{background:#f0f0ec;color:#1a1a18;border:0.5px solid #ccc}
+.btn-ghost:hover{background:#e8e8e4}
+.file-input{display:none}
+.preview{width:100%;max-height:240px;border-radius:8px;object-fit:contain;background:#f0f0ec;margin-top:8px;display:none}
+.file-name{font-size:13px;color:#888;margin-left:4px}
+.post-card{background:#fff;border:0.5px solid #ddd;border-radius:12px;overflow:hidden;margin-bottom:1rem}
+.post-header{padding:1rem 1.25rem;border-bottom:0.5px solid #eee;display:flex;justify-content:space-between;align-items:flex-start}
+.author{font-weight:500;font-size:14px}
+.ptime{font-size:12px;color:#999;margin-top:2px}
+.post-img{width:100%;max-height:420px;object-fit:cover;background:#f0f0ec;display:block}
+.caption{padding:1rem 1.25rem;font-size:14px;line-height:1.55;word-break:break-word}
+.comments-wrap{padding:0 1.25rem 1rem;border-top:0.5px solid #eee;margin-top:0}
+.cmt{padding:8px 0;border-bottom:0.5px solid #f0f0ec}
+.cmt:last-of-type{border-bottom:none}
+.cmt-author{font-size:12px;font-weight:500;margin-bottom:2px}
+.cmt-text{font-size:13px;color:#555;word-break:break-word}
+.cmt-time{font-size:11px;color:#aaa;margin-top:2px}
+.add-cmt{display:flex;gap:6px;margin-top:12px}
+.add-cmt input{flex:1;padding:7px 10px;border-radius:8px;border:0.5px solid #ccc;font-size:13px;background:#f9f9f7;font-family:inherit}
+.add-cmt button{padding:7px 12px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:12px;cursor:pointer;font-weight:500;font-family:inherit}
+.add-cmt button:hover{background:#2563eb}
+.add-cmt button:disabled{opacity:0.5;cursor:not-allowed}
+.empty{text-align:center;padding:3rem 1rem;color:#aaa;font-size:14px}
+.error{background:#fef2f2;border:0.5px solid #fca5a5;border-radius:8px;padding:1rem;margin-bottom:1rem;color:#b91c1c;font-size:13px}
+.success{background:#f0fdf4;border:0.5px solid #86efac;border-radius:8px;padding:.75rem 1rem;font-size:13px;color:#166534}
+.label{font-size:13px;color:#666;margin-bottom:6px;display:block}
+.gap{margin-top:12px}
+.feed-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.feed-title{font-size:16px;font-weight:500}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Project Feed 🐢</h1>
+
+  <div class="card" id="config-card">
+    <span class="label"><b>Firebase Config</b> — paste vào, chỉ cần 1 lần</span>
+    <textarea id="config-input" placeholder='const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "project.firebaseapp.com",
+  projectId: "project-id",
+  storageBucket: "project.firebasestorage.app",
+  messagingSenderId: "...",
+  appId: "..."
+};'></textarea>
+    <div class="row">
+      <button class="btn" onclick="saveConfig()">Kết nối Firebase</button>
+      <span id="config-status" style="font-size:13px;color:#888"></span>
+    </div>
+  </div>
+
+  <div id="app" style="display:none">
+    <div class="card">
+      <span class="label">Đăng bài mới</span>
+      <textarea id="caption" placeholder="Vừa xong PCB, hàn xong rồi nè! 🎉"></textarea>
+      <div class="row gap">
+        <button class="btn btn-ghost" type="button" onclick="document.getElementById('image').click()">📷 Chọn ảnh</button>
+        <span class="file-name" id="file-name">Không có ảnh</span>
+      </div>
+      <input type="file" id="image" class="file-input" accept="image/*">
+      <img id="preview" class="preview">
+      <div class="row gap">
+        <input type="text" id="author" placeholder="Tên của bạn..." maxlength="50" style="flex:1">
+        <button class="btn" onclick="postNow()" id="post-btn">Đăng</button>
+      </div>
+    </div>
+
+    <div id="error-box"></div>
+
+    <div class="feed-header">
+      <span class="feed-title">Feed của nhóm</span>
+    </div>
+    <div id="feed"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, doc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+
+const MAX_DIM = 1080;
+let db, auth;
+
+function cleanAndParse(raw){
+  raw = raw.replace(/\/\/.*$/gm,'').replace(/\/\*[\s\S]*?\*\//g,'');
+  raw = raw.replace(/,(\s*[}\]])/g,'$1');
+  raw = raw.replace(/([{,]\s*)(\w+)(\s*:)/g,'$1"$2"$3');
+  const m = raw.match(/\{[\s\S]*\}/);
+  if(!m) throw new Error('Không tìm thấy config object');
+  return JSON.parse(m[0]);
+}
+
+function saveConfig(){
+  const raw = document.getElementById('config-input').value.trim();
+  if(!raw) return;
+  try{
+    const config = cleanAndParse(raw);
+    if(!config.apiKey||!config.projectId) throw new Error('Thiếu apiKey hoặc projectId');
+    localStorage.setItem('fbConfig', JSON.stringify(config));
+    startApp(config);
+  } catch(e){
+    document.getElementById('config-status').textContent = '❌ '+e.message;
+  }
+}
+window.saveConfig = saveConfig;
+
+function startApp(config){
+  try{
+    const app = initializeApp(config);
+    db = getFirestore(app);
+    auth = getAuth(app);
+    signInAnonymously(auth).then(()=>{
+      document.getElementById('config-card').style.display='none';
+      document.getElementById('app').style.display='block';
+      listenFeed();
+      setupImageInput();
+    }).catch(e=>showErr('Auth lỗi: '+e.message));
+  } catch(e){
+    showErr('Init lỗi: '+e.message);
+  }
+}
+
+function setupImageInput(){
+  document.getElementById('image').addEventListener('change', e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ev=>{
+      document.getElementById('file-name').textContent = file.name;
+      const preview = document.getElementById('preview');
+      preview.src = ev.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function resizeEncode(file){
+  return new Promise(resolve=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      if(w>MAX_DIM||h>MAX_DIM){
+        if(w>h){h=Math.round(h*MAX_DIM/w);w=MAX_DIM;}
+        else{w=Math.round(w*MAX_DIM/h);h=MAX_DIM;}
+      }
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      resolve(canvas.toDataURL('image/jpeg',0.82));
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+async function postNow(){
+  const caption = document.getElementById('caption').value.trim();
+  const author = document.getElementById('author').value.trim()||'Anonymous';
+  const imgEl = document.getElementById('image');
+  if(!caption&&!imgEl.files[0]){ showErr('Viết gì đó hoặc post ảnh đi!'); return; }
+  const btn = document.getElementById('post-btn');
+  btn.disabled=true;btn.textContent='Đang đăng...';
+  let imageBase64=null;
+  if(imgEl.files[0]) imageBase64 = await resizeEncode(imgEl.files[0]);
+  try{
+    await addDoc(collection(db,'posts'),{caption,author,imageBase64,timestamp:Date.now(),comments:[]});
+    document.getElementById('caption').value='';
+    document.getElementById('author').value='';
+    document.getElementById('preview').style.display='none';
+    document.getElementById('file-name').textContent='Không có ảnh';
+    imgEl.value='';
+  } catch(e){ showErr('Đăng lỗi: '+e.message); }
+  btn.disabled=false;btn.textContent='Đăng';
+}
+window.postNow = postNow;
+
+function fmtTime(ts){
+  const diff=Date.now()-ts,m=Math.floor(diff/60000),h=Math.floor(diff/3600000),d=Math.floor(diff/86400000);
+  if(diff<60000)return'vừa xong';
+  if(m<60)return m+'m trước';
+  if(h<24)return h+'h trước';
+  if(d<7)return d+'d trước';
+  return new Date(ts).toLocaleDateString('vi-VN');
+}
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function renderPost(id,post){
+  const cmts=(post.comments||[]).map(c=>`
+    <div class="cmt">
+      <div class="cmt-author">${esc(c.author)}</div>
+      <div class="cmt-text">${esc(c.text)}</div>
+      <div class="cmt-time">${fmtTime(c.timestamp)}</div>
+    </div>`).join('');
+  return `<div class="post-card" data-id="${id}">
+    <div class="post-header">
+      <div>
+        <div class="author">${esc(post.author)}</div>
+        <div class="ptime">${fmtTime(post.timestamp)}</div>
+      </div>
+    </div>
+    ${post.imageBase64?`<img src="${post.imageBase64}" class="post-img" alt="">`:''}
+    ${post.caption?`<div class="caption">${esc(post.caption)}</div>`:''}
+    <div class="comments-wrap">
+      ${cmts}
+      <div class="add-cmt">
+        <input type="text" placeholder="Comment..." class="cmt-input" maxlength="200">
+        <button onclick="sendComment('${id}')">Gửi</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function listenFeed(){
+  const q = query(collection(db,'posts'),orderBy('timestamp','desc'));
+  onSnapshot(q, snap=>{
+    const feed = document.getElementById('feed');
+    if(snap.empty){ feed.innerHTML='<div class="empty">Chưa có bài nào, đăng thứ đầu tiên đi! 🐢</div>'; return; }
+    feed.innerHTML = snap.docs.map(d=>renderPost(d.id,d.data())).join('');
+    feed.querySelectorAll('.cmt-input').forEach(inp=>{
+      inp.addEventListener('keydown',e=>{ if(e.key==='Enter') sendComment(inp.closest('.post-card').dataset.id); });
+    });
+  }, e=>showErr('Feed lỗi: '+e.message));
+}
+
+async function sendComment(postId){
+  const inp = document.querySelector(`.post-card[data-id="${postId}"] .cmt-input`);
+  const text = inp.value.trim();
+  if(!text) return;
+  const btn = inp.nextElementSibling;
+  btn.disabled=true;
+  try{
+    const ref = doc(db,'posts',postId);
+    const snap = await getDoc(ref);
+    const comments = snap.data().comments||[];
+    comments.push({author:'Anonymous',text,timestamp:Date.now()});
+    await updateDoc(ref,{comments});
+    inp.value='';
+  } catch(e){ showErr('Comment lỗi: '+e.message); }
+  btn.disabled=false;
+}
+window.sendComment = sendComment;
+
+function showErr(msg){
+  const box=document.getElementById('error-box');
+  box.innerHTML=`<div class="error">${msg}</div>`;
+  setTimeout(()=>box.innerHTML='',5000);
+}
+
+const saved=localStorage.getItem('fbConfig');
+if(saved){ try{ startApp(JSON.parse(saved)); }catch(e){} }
+</script>
+</body>
+</html>
