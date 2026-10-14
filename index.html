@@ -44,13 +44,15 @@
   header {
     background: var(--card-bg);
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 100;
     border-bottom: 1px solid var(--border-color);
   }
   .header-wrap {
-    max-width: 680px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 0.75rem 1rem;
     display: flex;
@@ -58,6 +60,7 @@
     align-items: center;
   }
   .header-wrap h1 { font-size: 1.3rem; font-weight: 700; color: var(--primary); }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
   .theme-toggle {
     background: var(--input-bg);
     color: var(--text-color);
@@ -69,9 +72,90 @@
     font-weight: 500;
   }
   .theme-toggle:hover { opacity: 0.8; }
+  .user-chip {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .user-chip:hover { opacity: 0.85; }
 
-  /* Main Layout */
-  .wrap { max-width: 680px; margin: 1rem auto; padding: 0 1rem 3rem; }
+  /* Main Layout — 3 cột */
+  body { padding-top: 56px; }
+  .layout {
+    max-width: 1100px;
+    margin: 1rem auto;
+    padding: 0 1rem 3rem;
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 1.25rem;
+    align-items: start;
+  }
+  .wrap { min-width: 0; }
+
+  /* Member panel */
+  .member-panel {
+    position: sticky;
+    top: 70px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 15px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .online-count {
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--success);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 99px;
+  }
+  .member-list { padding: 8px 0; max-height: 400px; overflow-y: auto; }
+  .member-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+  }
+  .member-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px;
+    flex-shrink: 0;
+  }
+  .member-name { font-size: 14px; font-weight: 500; }
+  .member-status { font-size: 11px; color: var(--text-secondary); }
+  .dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+  .dot-online { background: var(--success); }
+  .dot-offline { background: var(--border-color); }
+  .panel-empty { padding: 1.5rem 1rem; text-align: center; color: var(--text-secondary); font-size: 13px; }
+
+  @media (max-width: 700px) {
+    .layout { grid-template-columns: 1fr; }
+    .member-panel { position: static; }
+  }
 
   /* Cards */
   .card {
@@ -203,10 +287,14 @@
 <header>
   <div class="header-wrap">
     <h1>Project Feed 🐢</h1>
-    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙 Dark Mode</button>
+    <div class="header-actions">
+      <button class="user-chip" onclick="changeName()" id="user-chip">👤 Đặt tên</button>
+      <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙 Dark Mode</button>
+    </div>
   </div>
 </header>
 
+<div class="layout">
 <div class="wrap">
   <!-- Firebase Config Section (Auto hide if saved) -->
   <div class="card" id="config-card">
@@ -236,11 +324,24 @@
     <!-- Feed -->
     <div id="feed"></div>
   </div>
+</div><!-- end .wrap -->
+
+<!-- Member Panel -->
+<div class="member-panel" id="member-panel" style="display:none">
+  <div class="panel-header">
+    👥 Thành viên
+    <span class="online-count" id="online-count">0 online</span>
+  </div>
+  <div class="member-list" id="member-list">
+    <div class="panel-empty">Chưa có thành viên nào</div>
+  </div>
 </div>
+
+</div><!-- end .layout -->
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, doc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, doc, updateDoc, getDoc, setDoc, deleteDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
 
 const MAX_DIM = 1080;
@@ -315,27 +416,13 @@ window.saveConfig = () => {
     const config = cleanAndParse(raw);
     if(!config.apiKey||!config.projectId) throw new Error('Thiếu apiKey hoặc projectId');
     localStorage.setItem('fbConfig', JSON.stringify(config));
-    startApp(config);
+    startAppWithPresence(config);
   } catch(e){
     showErr('Lỗi config: '+e.message);
   }
 };
 
-function startApp(config){
-  try{
-    const app = initializeApp(config);
-    db = getFirestore(app);
-    auth = getAuth(app);
-    signInAnonymously(auth).then(()=>{
-      document.getElementById('config-card').style.display='none';
-      document.getElementById('app').style.display='block';
-      listenFeed();
-      setupImageInput();
-    }).catch(e=>showErr('Auth lỗi (Hãy bật Anonymous Auth trong Firebase): '+e.message));
-  } catch(e){
-    showErr('Init lỗi: '+e.message);
-  }
-}
+function startApp(config){ startAppWithPresence(config); }
 
 function setupImageInput(){
   document.getElementById('image').addEventListener('change', e=>{
@@ -515,15 +602,139 @@ function showErr(msg){
   setTimeout(()=>{ box.style.display = 'none'; box.textContent=''; }, 5000);
 }
 
-// Init
+// ── Presence / Heartbeat ──
+const ONLINE_THRESHOLD = 90000; // 90s
+let heartbeatInterval = null;
+let presenceId = null;
+
+async function startPresence(){
+  if(!currentUserName || !db) return;
+  presenceId = currentUserName + '_' + Date.now();
+  const ref = doc(db, 'presence', presenceId);
+  const ping = async () => {
+    try {
+      await setDoc(ref, { name: currentUserName, lastSeen: Date.now() });
+    } catch(e){}
+  };
+  await ping();
+  heartbeatInterval = setInterval(ping, 30000);
+  window.addEventListener('beforeunload', async () => {
+    try { await deleteDoc(ref); } catch(e){}
+  });
+}
+
+function stopPresence(){
+  if(heartbeatInterval) clearInterval(heartbeatInterval);
+  heartbeatInterval = null;
+}
+
+function listenMembers(){
+  onSnapshot(collection(db, 'presence'), snap => {
+    const now = Date.now();
+    const online = new Set();
+    const all = new Map(); // name → lastSeen
+
+    snap.docs.forEach(d => {
+      const { name, lastSeen } = d.data();
+      if(!name) return;
+      const prev = all.get(name) || 0;
+      if(lastSeen > prev) all.set(name, lastSeen);
+    });
+
+    all.forEach((lastSeen, name) => {
+      if(now - lastSeen < ONLINE_THRESHOLD) online.add(name);
+    });
+
+    renderMembers(all, online);
+  });
+}
+
+function renderMembers(all, online){
+  const panel = document.getElementById('member-panel');
+  const list = document.getElementById('member-list');
+  const countEl = document.getElementById('online-count');
+
+  panel.style.display = 'block';
+  countEl.textContent = online.size + ' online';
+
+  if(all.size === 0){
+    list.innerHTML = '<div class="panel-empty">Chưa có thành viên nào</div>';
+    return;
+  }
+
+  // Sort: online trước, offline sau, theo tên
+  const sorted = [...all.entries()].sort((a,b)=>{
+    const ao = online.has(a[0]), bo = online.has(b[0]);
+    if(ao !== bo) return ao ? -1 : 1;
+    return a[0].localeCompare(b[0]);
+  });
+
+  list.innerHTML = sorted.map(([name, lastSeen])=>{
+    const isOnline = online.has(name);
+    const initial = name.charAt(0).toUpperCase();
+    const status = isOnline ? 'Online' : 'Offline · ' + fmtTime(lastSeen);
+    return `<div class="member-item">
+      <div class="member-avatar">${esc(initial)}</div>
+      <div>
+        <div class="member-name">${esc(name)}</div>
+        <div class="member-status">${status}</div>
+      </div>
+      <span class="dot ${isOnline ? 'dot-online' : 'dot-offline'}"></span>
+    </div>`;
+  }).join('');
+}
+
+// ── Đổi tên ──
+window.changeName = () => {
+  document.getElementById('username-input').value = currentUserName || '';
+  document.getElementById('name-modal').style.display = 'flex';
+};
+
+// ── Override saveName để start presence ──
+window.saveName = async () => {
+  const name = document.getElementById('username-input').value.trim();
+  if(!name){ alert('Vui lòng nhập tên!'); return; }
+  currentUserName = name;
+  localStorage.setItem('userName', name);
+  document.getElementById('name-modal').style.display = 'none';
+  document.getElementById('user-chip').textContent = '👤 ' + name;
+  updateUIAccess();
+  if(db){ stopPresence(); await startPresence(); }
+};
+
+// ── Override startApp để thêm presence sau connect ──
+const _origStartApp = startApp;
+
+// patch listenFeed để show member panel
+function startAppWithPresence(config){
+  try{
+    const app = initializeApp(config);
+    db = getFirestore(app);
+    auth = getAuth(app);
+    signInAnonymously(auth).then(async ()=>{
+      document.getElementById('config-card').style.display='none';
+      document.getElementById('app').style.display='block';
+      listenFeed();
+      listenMembers();
+      setupImageInput();
+      if(currentUserName) await startPresence();
+      document.getElementById('user-chip').textContent = currentUserName ? '👤 ' + currentUserName : '👤 Đặt tên';
+    }).catch(e=>showErr('Auth lỗi (Hãy bật Anonymous Auth trong Firebase): '+e.message));
+  } catch(e){
+    showErr('Init lỗi: '+e.message);
+  }
+}
+
+// ── Init ──
 initTheme();
 checkNameOnLoad();
+document.getElementById('user-chip').textContent = currentUserName ? '👤 ' + currentUserName : '👤 Đặt tên';
 
 const savedConfig = localStorage.getItem('fbConfig');
 if(savedConfig){ 
   try{ 
     document.getElementById('config-card').style.display='none';
-    startApp(JSON.parse(savedConfig)); 
+    startAppWithPresence(JSON.parse(savedConfig)); 
   } catch(e){} 
 }
 </script>
