@@ -974,11 +974,29 @@ window.addShopRow = () => {
 window.updateRow = (i, field, val) => {
   shopRows[i][field] = val;
   saveShop();
-  // Chỉ re-render cột diff + totals khi đổi giá
+  // Không re-render cả bảng (sẽ làm mất focus input đang gõ).
+  // Chỉ cập nhật ô chênh lệch của dòng đó + tổng cộng.
   if(field === 'estimated' || field === 'actual') {
-    renderShopTable();
+    updateRowDiff(i);
+    calcTotals();
   }
 };
+
+// Cập nhật riêng ô ± của 1 dòng, không đụng tới các input
+function updateRowDiff(i) {
+  const tr = document.getElementById('shop-tbody').querySelectorAll('tr')[i];
+  if(!tr) return;
+  const r = shopRows[i];
+  const diffCell = tr.children[3]; // cột thứ 4 là ±
+  const diff = (r.estimated && r.actual)
+    ? Number(r.actual) - Number(r.estimated) : null;
+  if(diff === null) {
+    diffCell.innerHTML = '—';
+  } else {
+    const cls = diff > 0 ? 'diff-neg' : diff < 0 ? 'diff-pos' : '';
+    diffCell.innerHTML = `<span class="price-diff ${cls}">${diff >= 0 ? '+' : ''}${fmtVND(diff)}</span>`;
+  }
+}
 
 window.deleteRow = (i) => {
   shopRows.splice(i, 1);
