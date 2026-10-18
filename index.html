@@ -226,6 +226,35 @@
   .modal-content p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 14px; }
   .modal-content input { margin-bottom: 1rem; text-align: center; }
 
+  /* ── Avatar Picker trong modal ── */
+  .avatar-picker { margin-bottom: 1rem; }
+  .avatar-preview {
+    width: 84px; height: 84px;
+    border-radius: 50%;
+    background: var(--input-bg);
+    border: 2px dashed var(--border-color);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    margin: 0 auto 8px;
+    font-size: 32px; font-weight: 700; color: var(--primary);
+    overflow: hidden;
+    position: relative;
+    transition: 0.2s;
+  }
+  .avatar-preview:hover { border-color: var(--primary); opacity: 0.9; }
+  .avatar-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+  .avatar-preview.has-image { border: none; }
+  .avatar-picker-hint { font-size: 12px; color: var(--text-secondary); text-align: center; }
+  .avatar-picker-hint a { color: var(--primary); text-decoration: none; cursor: pointer; }
+  .avatar-picker-hint a.remove { color: var(--danger); margin-left: 8px; }
+
+  /* Ảnh đại diện trong post / member / chip */
+  .avatar img, .member-avatar img, .user-chip-avatar {
+    width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;
+  }
+  .user-chip { display: inline-flex; align-items: center; gap: 7px; }
+  .user-chip-avatar { width: 22px !important; height: 22px !important; flex-shrink: 0; }
+
   /* Post Item */
   .post-card { background: var(--card-bg); border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 1rem; border: 1px solid var(--border-color); overflow: hidden; }
   .post-header { padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
@@ -410,8 +439,19 @@
 <div id="name-modal" class="modal-overlay">
   <div class="modal-content">
     <h2>🐢 Chào mừng đến Project Feed</h2>
-    <p>Hãy nhập tên của bạn để có thể đăng bài, bình luận và tương tác. Nếu bỏ qua, bạn chỉ có thể xem bài viết dưới dạng ẩn danh.</p>
-    <input type="text" id="username-input" placeholder="Nhập tên của bạn..." maxlength="30">
+    <p>Hãy nhập tên và chọn ảnh đại diện để đăng bài, bình luận và tương tác. Có thể bỏ qua để chỉ xem bài viết.</p>
+    <div class="avatar-picker">
+      <div class="avatar-preview" id="avatar-preview" onclick="pickAvatar()">
+        <span id="avatar-initial">?</span>
+        <img id="avatar-img" src="" alt="" style="display:none;">
+      </div>
+      <div class="avatar-picker-hint">
+        <a onclick="pickAvatar()">📷 Chọn ảnh</a>
+        <a class="remove" id="remove-avatar-link" onclick="removeAvatar()" style="display:none;">Xoá ảnh</a>
+      </div>
+      <input type="file" id="avatar-input" accept="image/*" style="display:none;">
+    </div>
+    <input type="text" id="username-input" placeholder="Nhập tên của bạn..." maxlength="30" oninput="refreshAvatarPickerUI()">
     <button class="btn" style="width:100%; margin-bottom:8px;" onclick="saveName()">Bắt đầu tương tác</button>
     <button class="btn btn-ghost" style="width:100%;" onclick="skipName()">Bỏ qua (Chỉ xem)</button>
   </div>
@@ -513,8 +553,11 @@ import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, doc, upda
 import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
 
 const MAX_DIM = 1080;
+const AVATAR_SIZE = 128; // kích thước ảnh đại diện (vuông)
 let db, auth;
 let currentUserName = localStorage.getItem('userName') || null;
+let currentUserAvatar = localStorage.getItem('userAvatar') || null;
+let pendingAvatar = null; // trạng thái tạm trong modal: null=chưa đổi | string=đã chọn | ''=xoá
 
 // Handle Theme
 function initTheme() {
@@ -542,8 +585,12 @@ window.saveName = () => {
 
 window.skipName = () => {
   currentUserName = null;
+  currentUserAvatar = null;
+  pendingAvatar = null;
   localStorage.removeItem('userName');
+  localStorage.removeItem('userAvatar');
   document.getElementById('name-modal').style.display = 'none';
+  window.updateUserChip();
   updateUIAccess();
 };
 
@@ -625,6 +672,90 @@ async function resizeEncode(file){
   });
 }
 
+// ── Avatar Helpers ──
+// Resize/crop vuông về AVATAR_SIZE x AVATAR_SIZE, nén JPEG để nhẹ (~5-10KB)
+function resizeAvatar(file){
+  return new Promise(resolve=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const minDim = Math.min(img.width, img.height);
+      const sx = (img.width - minDim) / 2;
+      const sy = (img.height - minDim) / 2;
+      const canvas = document.createElement('canvas');
+      canvas.width = AVATAR_SIZE;
+      canvas.height = AVATAR_SIZE;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
+      resolve(canvas.toDataURL('image/jpeg', 0.8));
+    };
+    img.onerror = () => resolve(null);
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+// Cập nhật giao diện phần preview trong modal dựa trên pendingAvatar + tên đang gõ
+window.refreshAvatarPickerUI = () => {
+  const preview = document.getElementById('avatar-preview');
+  const img = document.getElementById('avatar-img');
+  const initial = document.getElementById('avatar-initial');
+  const removeLink = document.getElementById('remove-avatar-link');
+  const name = (document.getElementById('username-input').value || '').trim();
+  const useAvatar = pendingAvatar === '' ? null : (pendingAvatar ?? currentUserAvatar);
+
+  if(useAvatar){
+    img.src = useAvatar;
+    img.style.display = 'block';
+    initial.style.display = 'none';
+    preview.classList.add('has-image');
+    removeLink.style.display = '';
+  } else {
+    img.style.display = 'none';
+    img.src = '';
+    initial.style.display = '';
+    initial.textContent = name ? name.charAt(0).toUpperCase() : '?';
+    preview.classList.remove('has-image');
+    removeLink.style.display = 'none';
+  }
+};
+
+window.pickAvatar = () => {
+  document.getElementById('avatar-input').click();
+};
+
+window.removeAvatar = () => {
+  pendingAvatar = ''; // đánh dấu xoá
+  document.getElementById('avatar-input').value = '';
+  window.refreshAvatarPickerUI();
+};
+
+// Cập nhật nút user chip ở góc trên: hiển thị ảnh hoặc chữ cái đầu
+window.updateUserChip = () => {
+  const chip = document.getElementById('user-chip');
+  if(!chip) return;
+  if(currentUserName){
+    if(currentUserAvatar){
+      chip.innerHTML = `<img class="user-chip-avatar" src="${currentUserAvatar}" alt="">` +
+        `<span>${esc(currentUserName)}</span>`;
+    } else {
+      chip.innerHTML = `👤 ${esc(currentUserName)}`;
+    }
+  } else {
+    chip.textContent = '👤 Đặt tên';
+  }
+};
+
+// Setup avatar file input listener
+function setupAvatarInput(){
+  document.getElementById('avatar-input').addEventListener('change', async e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const data = await resizeAvatar(file);
+    if(!data) return;
+    pendingAvatar = data;
+    window.refreshAvatarPickerUI();
+  });
+}
+
 window.postNow = async () => {
   if(!currentUserName) { showErr('Vui lòng đặt tên trước khi đăng bài!'); return; }
   const caption = document.getElementById('caption').value.trim();
@@ -638,12 +769,13 @@ window.postNow = async () => {
   
   try{
     await addDoc(collection(db,'posts'),{
-      author: currentUserName, 
-      caption, imageBase64, 
-      timestamp: Date.now(), 
-      comments: [], 
-      likes: [], 
-      dislikes: [] 
+      author: currentUserName,
+      authorAvatar: currentUserAvatar || null,
+      caption, imageBase64,
+      timestamp: Date.now(),
+      comments: [],
+      likes: [],
+      dislikes: []
     });
     document.getElementById('caption').value='';
     document.getElementById('preview').style.display='none';
@@ -679,7 +811,9 @@ function renderPost(id, post){
 
   return `<div class="post-card" data-id="${id}">
     <div class="post-header">
-      <div class="avatar">${esc(post.author.charAt(0).toUpperCase())}</div>
+      <div class="avatar">${post.authorAvatar
+        ? `<img src="${post.authorAvatar}" alt="">`
+        : esc(post.author.charAt(0).toUpperCase())}</div>
       <div class="author-info">
         <div class="author">${esc(post.author)}</div>
         <div class="ptime">${fmtTime(post.timestamp)}</div>
@@ -781,7 +915,7 @@ async function startPresence(){
   const ref = doc(db, 'presence', presenceId);
   const ping = async () => {
     try {
-      await setDoc(ref, { name: currentUserName, lastSeen: Date.now() });
+      await setDoc(ref, { name: currentUserName, lastSeen: Date.now(), avatar: currentUserAvatar || null });
     } catch(e){}
   };
   await ping();
@@ -800,17 +934,19 @@ function listenMembers(){
   onSnapshot(collection(db, 'presence'), snap => {
     const now = Date.now();
     const online = new Set();
-    const all = new Map(); // name → lastSeen
+    const all = new Map(); // name → { lastSeen, avatar }
 
     snap.docs.forEach(d => {
-      const { name, lastSeen } = d.data();
+      const { name, lastSeen, avatar } = d.data();
       if(!name) return;
-      const prev = all.get(name) || 0;
-      if(lastSeen > prev) all.set(name, lastSeen);
+      const prev = all.get(name) || { lastSeen: 0, avatar: null };
+      if(lastSeen > prev.lastSeen) {
+        all.set(name, { lastSeen, avatar: avatar || prev.avatar });
+      }
     });
 
-    all.forEach((lastSeen, name) => {
-      if(now - lastSeen < ONLINE_THRESHOLD) online.add(name);
+    all.forEach((info, name) => {
+      if(now - info.lastSeen < ONLINE_THRESHOLD) online.add(name);
     });
 
     renderMembers(all, online);
@@ -837,12 +973,15 @@ function renderMembers(all, online){
     return a[0].localeCompare(b[0]);
   });
 
-  list.innerHTML = sorted.map(([name, lastSeen])=>{
+  list.innerHTML = sorted.map(([name, info])=>{
     const isOnline = online.has(name);
     const initial = name.charAt(0).toUpperCase();
-    const status = isOnline ? 'Online' : 'Offline · ' + fmtTime(lastSeen);
+    const status = isOnline ? 'Online' : 'Offline · ' + fmtTime(info.lastSeen);
+    const avatarHtml = info.avatar
+      ? `<img src="${info.avatar}" alt="">`
+      : esc(initial);
     return `<div class="member-item">
-      <div class="member-avatar">${esc(initial)}</div>
+      <div class="member-avatar">${avatarHtml}</div>
       <div>
         <div class="member-name">${esc(name)}</div>
         <div class="member-status">${status}</div>
@@ -855,6 +994,9 @@ function renderMembers(all, online){
 // ── Đổi tên ──
 window.changeName = () => {
   document.getElementById('username-input').value = currentUserName || '';
+  pendingAvatar = null; // khởi đầu: chưa đổi gì (dùng lại avatar hiện tại nếu có)
+  document.getElementById('avatar-input').value = '';
+  window.refreshAvatarPickerUI();
   document.getElementById('name-modal').style.display = 'flex';
 };
 
@@ -864,8 +1006,21 @@ window.saveName = async () => {
   if(!name){ alert('Vui lòng nhập tên!'); return; }
   currentUserName = name;
   localStorage.setItem('userName', name);
+
+  // Commit avatar mới (nếu có)
+  if(pendingAvatar !== null){
+    if(pendingAvatar === ''){
+      currentUserAvatar = null;
+      localStorage.removeItem('userAvatar');
+    } else {
+      currentUserAvatar = pendingAvatar;
+      localStorage.setItem('userAvatar', currentUserAvatar);
+    }
+  }
+  pendingAvatar = null;
+
   document.getElementById('name-modal').style.display = 'none';
-  document.getElementById('user-chip').textContent = '👤 ' + name;
+  window.updateUserChip();
   updateUIAccess();
   if(db){ stopPresence(); await startPresence(); }
 };
@@ -886,7 +1041,7 @@ function startAppWithPresence(config){
       listenMembers();
       setupImageInput();
       if(currentUserName) await startPresence();
-      document.getElementById('user-chip').textContent = currentUserName ? '👤 ' + currentUserName : '👤 Đặt tên';
+      window.updateUserChip();
     }).catch(e=>showErr('Auth lỗi (Hãy bật Anonymous Auth trong Firebase): '+e.message));
   } catch(e){
     showErr('Init lỗi: '+e.message);
@@ -1007,7 +1162,8 @@ window.deleteRow = (i) => {
 // ── Init ──
 initTheme();
 checkNameOnLoad();
-document.getElementById('user-chip').textContent = currentUserName ? '👤 ' + currentUserName : '👤 Đặt tên';
+setupAvatarInput();
+window.updateUserChip();
 renderShopTable();
 
 const savedConfig = localStorage.getItem('fbConfig');
