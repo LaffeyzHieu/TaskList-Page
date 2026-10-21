@@ -358,7 +358,7 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
-    min-width: 620px;
+    min-width: 820px;
   }
   table.shop th {
     padding: 10px 12px;
@@ -430,6 +430,45 @@
   .price-diff {
     font-size: 12px;
     font-weight: 600;
+  }
+
+  /* ── Ô giá chia 2 phần: nghìn + đồng (3 số cuối) ── */
+  .price-split {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .price-split .price-thousands {
+    flex: 1;
+    min-width: 0;
+    text-align: right;
+  }
+  .price-split .price-last3 {
+    width: 48px;
+    flex-shrink: 0;
+    text-align: center;
+    font-size: 12px;
+    padding: 6px 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .price-split .price-last3:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: var(--input-bg);
+  }
+  .price-sep {
+    color: var(--text-secondary);
+    font-size: 11px;
+    flex-shrink: 0;
+    font-weight: 600;
+  }
+  /* Cột "Sửa lần cuối" */
+  .last-modified {
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
   }
 </style>
 </head>
@@ -517,12 +556,13 @@
           <table class="shop">
             <thead>
               <tr>
-                <th style="width:28%">Sản phẩm</th>
-                <th style="width:14%">Giá dự kiến</th>
-                <th style="width:14%">Giá thực</th>
-                <th style="width:8%">±</th>
-                <th style="width:20%">Link</th>
-                <th style="width:14%">Trạng thái</th>
+                <th style="width:20%">Sản phẩm</th>
+                <th style="width:16%">Giá dự kiến</th>
+                <th style="width:16%">Giá thực</th>
+                <th style="width:7%">±</th>
+                <th style="width:14%">Link</th>
+                <th style="width:13%">Trạng thái</th>
+                <th style="width:10%">Sửa lần cuối</th>
                 <th style="width:4%"></th>
               </tr>
             </thead>
@@ -1094,12 +1134,24 @@ function renderShopTable() {
   const tbody = document.getElementById('shop-tbody');
   if(!tbody) return;
   if(shopRows.length === 0){
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-secondary)">Chưa có sản phẩm nào. Bấm "+ Thêm dòng"!</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-secondary)">Chưa có sản phẩm nào. Bấm "+ Thêm dòng"!</td></tr>`;
     calcTotals(); return;
   }
   tbody.innerHTML = shopRows.map((r, i) => {
+    const est = Number(r.estimated) || 0;
+    const act = Number(r.actual) || 0;
+    const estK = Math.floor(est / 1000);
+    const estL = est % 1000;
+    const actK = Math.floor(act / 1000);
+    const actL = act % 1000;
+    const estL3Str = String(estL).padStart(3, '0');
+    const actL3Str = String(actL).padStart(3, '0');
+    // Ô "Đồng" (3 số cuối) chỉ mở khi phần nghìn có 4+ chữ số (tức giá ≥ 1.000.000₫)
+    const estLocked = estK < 1000 ? 'disabled' : '';
+    const actLocked = actK < 1000 ? 'disabled' : '';
+
     const diff = (r.estimated && r.actual)
-      ? Number(r.actual) - Number(r.estimated) : null;
+      ? act - est : null;
     const diffHtml = diff !== null
       ? `<span class="price-diff ${diff > 0 ? 'diff-neg' : diff < 0 ? 'diff-pos' : ''}">${diff >= 0 ? '+' : ''}${fmtVND(diff)}</span>`
       : '—';
@@ -1107,13 +1159,26 @@ function renderShopTable() {
       `<option value="${o.val}" ${r.status === o.val ? 'selected' : ''}>${o.label}</option>`
     ).join('');
     const statusCls = STATUS_OPTS.find(o => o.val === r.status)?.cls || '';
+    const lastMod = r.lastModified ? fmtLastMod(r.lastModified) : '—';
+
+    // Enter → blur (thoát khỏi ô input)
+    const entBlur = ` onkeydown="if(event.key==='Enter') this.blur()"`;
     return `<tr>
-      <td><input class="shop-input" placeholder="Tên sản phẩm..." value="${esc(r.name||'')}" oninput="updateRow(${i},'name',this.value)"></td>
-      <td><input class="shop-input" type="number" placeholder="0" value="${r.estimated||''}" oninput="updateRow(${i},'estimated',this.value)"></td>
-      <td><input class="shop-input" type="number" placeholder="0" value="${r.actual||''}" oninput="updateRow(${i},'actual',this.value)"></td>
+      <td><input class="shop-input" placeholder="Tên sản phẩm..." value="${esc(r.name||'')}" oninput="updateRow(${i},'name',this.value)"${entBlur}></td>
+      <td><div class="price-split">
+        <input type="number" class="shop-input price-thousands" placeholder="0" value="${estK || ''}" oninput="setPricePart(${i},'estimated','thousands',this.value)"${entBlur}>
+        <span class="price-sep">.</span>
+        <input type="text" inputmode="numeric" maxlength="3" data-field="estimated" class="shop-input price-last3" placeholder="000" value="${estL3Str}" ${estLocked} oninput="setPricePart(${i},'estimated','last3',this.value)" onfocus="this.select()" onblur="this.value=String(Number(this.value)||0).padStart(3,'0')"${entBlur}>
+      </div></td>
+      <td><div class="price-split">
+        <input type="number" class="shop-input price-thousands" placeholder="0" value="${actK || ''}" oninput="setPricePart(${i},'actual','thousands',this.value)"${entBlur}>
+        <span class="price-sep">.</span>
+        <input type="text" inputmode="numeric" maxlength="3" data-field="actual" class="shop-input price-last3" placeholder="000" value="${actL3Str}" ${actLocked} oninput="setPricePart(${i},'actual','last3',this.value)" onfocus="this.select()" onblur="this.value=String(Number(this.value)||0).padStart(3,'0')"${entBlur}>
+      </div></td>
       <td>${diffHtml}</td>
-      <td><input class="shop-input" placeholder="https://..." value="${esc(r.link||'')}" oninput="updateRow(${i},'link',this.value)">${r.link ? `<a href="${esc(r.link)}" target="_blank" class="shop-link">Mở ↗</a>` : ''}</td>
-      <td><select class="status-select ${statusCls}" onchange="updateRow(${i},'status',this.value)">${statusOpts}</select></td>
+      <td><input class="shop-input" placeholder="https://..." value="${esc(r.link||'')}" oninput="updateRow(${i},'link',this.value)"${entBlur}>${r.link ? `<a href="${esc(r.link)}" target="_blank" class="shop-link">Mở ↗</a>` : ''}</td>
+      <td><select class="status-select ${statusCls}" onchange="updateRow(${i},'status',this.value)"${entBlur}>${statusOpts}</select></td>
+      <td class="last-modified" data-i="${i}">${lastMod}</td>
       <td><button class="del-row-btn" onclick="deleteRow(${i})" title="Xóa">🗑</button></td>
     </tr>`;
   }).join('');
@@ -1121,21 +1186,79 @@ function renderShopTable() {
 }
 
 window.addShopRow = () => {
-  shopRows.push({ name:'', estimated:'', actual:'', link:'', status:'searching' });
+  shopRows.push({ name:'', estimated:0, actual:0, link:'', status:'searching', lastModified: Date.now() });
   saveShop();
   renderShopTable();
 };
 
+// Cập nhật ô giá theo phần (thousands/last3) — KHÔNG re-render cả bảng để giữ focus
+window.setPricePart = (i, field, part, val) => {
+  const current = Number(shopRows[i][field]) || 0;
+  let thousands = Math.floor(current / 1000);
+  let last3 = current % 1000;
+
+  if(part === 'thousands') {
+    thousands = Math.max(0, Math.floor(Number(val) || 0));
+  } else if(part === 'last3') {
+    // Chỉ cho phép nhập khi đã mở khoá (thousands ≥ 1000)
+    if(thousands < 1000) return;
+    let n = Math.max(0, Math.min(999, Math.floor(Number(val) || 0)));
+    last3 = n;
+  }
+
+  shopRows[i][field] = thousands * 1000 + last3;
+  shopRows[i].lastModified = Date.now();
+  saveShop();
+
+  // Cập nhật riêng ô ± + tổng + cột sửa lần cuối
+  updateRowDiff(i);
+  calcTotals();
+  updateLastModifiedCell(i);
+
+  // Nếu phần thousands vừa đổi, bật/tắt ô "Đồng" tương ứng
+  if(part === 'thousands') {
+    const row = document.getElementById('shop-tbody').querySelectorAll('tr')[i];
+    if(row) {
+      const last3Input = row.querySelector(`.price-last3[data-field="${field}"]`) ||
+                         row.querySelectorAll('.price-last3')[field === 'estimated' ? 0 : 1];
+      if(last3Input) {
+        const shouldEnable = thousands >= 1000;
+        last3Input.disabled = !shouldEnable;
+      }
+    }
+  }
+};
+
 window.updateRow = (i, field, val) => {
   shopRows[i][field] = val;
+  shopRows[i].lastModified = Date.now();
   saveShop();
   // Không re-render cả bảng (sẽ làm mất focus input đang gõ).
-  // Chỉ cập nhật ô chênh lệch của dòng đó + tổng cộng.
+  // Chỉ cập nhật ô chênh lệch của dòng đó + tổng cộng + cột sửa lần cuối.
   if(field === 'estimated' || field === 'actual') {
     updateRowDiff(i);
     calcTotals();
   }
+  updateLastModifiedCell(i);
 };
+
+// Định dạng "HH:mm / DD-MM-YYYY"
+function fmtLastMod(ts) {
+  const d = new Date(ts);
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(d.getHours())}:${pad(d.getMinutes())} / ${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}`;
+}
+
+// Cập nhật riêng cột "Sửa lần cuối" của 1 dòng
+function updateLastModifiedCell(i) {
+  const row = document.getElementById('shop-tbody').querySelectorAll('tr')[i];
+  if(!row) return;
+  // Cột "Sửa lần cuối" là cột index 6 (sau Trạng thái, trước Delete)
+  const cell = row.querySelector('.last-modified');
+  if(cell) {
+    cell.textContent = fmtLastMod(Date.now());
+  }
+}
 
 // Cập nhật riêng ô ± của 1 dòng, không đụng tới các input
 function updateRowDiff(i) {
