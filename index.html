@@ -1146,9 +1146,9 @@ function renderShopTable() {
     const actL = act % 1000;
     const estL3Str = String(estL).padStart(3, '0');
     const actL3Str = String(actL).padStart(3, '0');
-    // Ô "Đồng" (3 số cuối) chỉ mở khi phần nghìn có 4+ chữ số (tức giá ≥ 1.000.000₫)
-    const estLocked = estK < 1000 ? 'disabled' : '';
-    const actLocked = actK < 1000 ? 'disabled' : '';
+    // Ô lẻ chỉ disabled khi chưa nhập gì (est/act = 0 và chưa có data)
+    const estLocked = (r.estimated === '' || r.estimated === null || r.estimated === undefined) ? 'disabled' : '';
+    const actLocked = (r.actual    === '' || r.actual    === null || r.actual    === undefined) ? 'disabled' : '';
 
     const diff = (r.estimated && r.actual)
       ? act - est : null;
@@ -1200,8 +1200,7 @@ window.setPricePart = (i, field, part, val) => {
   if(part === 'thousands') {
     thousands = Math.max(0, Math.floor(Number(val) || 0));
   } else if(part === 'last3') {
-    // Chỉ cho phép nhập khi đã mở khoá (thousands ≥ 1000)
-    if(thousands < 1000) return;
+    // Luôn cho nhập — không cần điều kiện thousands
     let n = Math.max(0, Math.min(999, Math.floor(Number(val) || 0)));
     last3 = n;
   }
@@ -1215,14 +1214,15 @@ window.setPricePart = (i, field, part, val) => {
   calcTotals();
   updateLastModifiedCell(i);
 
-  // Nếu phần thousands vừa đổi, bật/tắt ô "Đồng" tương ứng
+  // Nếu phần thousands vừa đổi, bật/tắt ô lẻ tương ứng
+  // disabled chỉ khi user chưa nhập gì vào ô thousands (val rỗng)
   if(part === 'thousands') {
     const row = document.getElementById('shop-tbody').querySelectorAll('tr')[i];
     if(row) {
       const last3Input = row.querySelector(`.price-last3[data-field="${field}"]`) ||
                          row.querySelectorAll('.price-last3')[field === 'estimated' ? 0 : 1];
       if(last3Input) {
-        const shouldEnable = thousands >= 1000;
+        const shouldEnable = val !== '' && val !== null && val !== undefined;
         last3Input.disabled = !shouldEnable;
       }
     }
