@@ -52,7 +52,7 @@
     border-bottom: 1px solid var(--border-color);
   }
   .header-wrap {
-    max-width: 1100px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 0.75rem 1rem;
     display: flex;
@@ -87,15 +87,25 @@
   /* Main Layout — 3 cột */
   body { padding-top: 56px; }
   .layout {
-    max-width: 1100px;
+    max-width: 1400px;
     margin: 1rem auto;
     padding: 0 1rem 3rem;
     display: grid;
-    grid-template-columns: 1fr 280px;
-    gap: 1.25rem;
+    grid-template-columns: 1fr 300px;
+    gap: 1.5rem;
     align-items: start;
+    transition: max-width 0.25s ease;
   }
   .wrap { min-width: 0; }
+
+  /* Khi đang ở Tab Mua sắm → ẩn panel thành viên, mở rộng bảng ra toàn bộ chiều ngang */
+  .layout.tab-shop {
+    max-width: 1500px;
+    grid-template-columns: 1fr;
+  }
+  .layout.tab-shop .member-panel {
+    display: none !important;
+  }
 
   /* Member panel */
   .member-panel {
@@ -261,7 +271,8 @@
   .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; }
   .author-info .author { font-weight: 600; font-size: 15px; }
   .author-info .ptime { font-size: 12px; color: var(--text-secondary); }
-  .post-img { width: 100%; display: block; background: var(--input-bg); }
+  .post-img { width: 100%; display: block; background: var(--input-bg); cursor: zoom-in; transition: opacity 0.15s ease; }
+  .post-img:hover { opacity: 0.94; }
   .caption { padding: 12px 16px 0; font-size: 15px; line-height: 1.5; word-break: break-word; }
 
   /* Action Bar (Like/Dislike/Comment) */
@@ -336,18 +347,18 @@
     margin-bottom: 1rem;
   }
   .shop-toolbar {
-    padding: 12px 16px;
+    padding: 16px 22px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--border-color);
-    gap: 8px;
+    gap: 12px;
     flex-wrap: wrap;
   }
   .shop-totals {
     display: flex;
-    gap: 16px;
-    font-size: 13px;
+    gap: 22px;
+    font-size: 14px;
     color: var(--text-secondary);
   }
   .shop-totals strong { color: var(--text-color); }
@@ -358,10 +369,10 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
-    min-width: 820px;
+    min-width: 1080px;
   }
   table.shop th {
-    padding: 10px 12px;
+    padding: 14px 16px;
     text-align: left;
     font-size: 12px;
     font-weight: 600;
@@ -371,7 +382,7 @@
     white-space: nowrap;
   }
   table.shop td {
-    padding: 6px 8px;
+    padding: 9px 12px;
     border-bottom: 1px solid var(--border-color);
     vertical-align: middle;
   }
@@ -470,6 +481,88 @@
     text-align: center;
     font-variant-numeric: tabular-nums;
   }
+
+  /* ── Lightbox: xem ảnh phóng to ── */
+  .lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    overflow: hidden;
+    cursor: zoom-out;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .lightbox-overlay.active { display: flex; }
+  .lightbox-img {
+    max-width: 92vw;
+    max-height: 92vh;
+    object-fit: contain;
+    cursor: grab;
+    transform-origin: center center;
+    transition: transform 0.08s ease-out;
+    -webkit-user-drag: none;
+    pointer-events: auto;
+    will-change: transform;
+  }
+  .lightbox-img.dragging { cursor: grabbing; transition: none; }
+  .lightbox-close {
+    position: absolute;
+    top: 22px;
+    right: 26px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(255,255,255,0.5);
+    color: #fff;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10002;
+    transition: 0.2s ease;
+    font-family: inherit;
+  }
+  .lightbox-close:hover {
+    background: rgba(255,80,80,0.35);
+    border-color: #fff;
+    transform: rotate(90deg) scale(1.05);
+  }
+  .lightbox-zoom-badge {
+    position: absolute;
+    top: 26px;
+    left: 26px;
+    color: rgba(255,255,255,0.9);
+    font-size: 13px;
+    background: rgba(0,0,0,0.45);
+    padding: 7px 14px;
+    border-radius: 99px;
+    pointer-events: none;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    z-index: 10001;
+  }
+  .lightbox-hint {
+    position: absolute;
+    bottom: 26px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    background: rgba(0,0,0,0.45);
+    padding: 8px 18px;
+    border-radius: 99px;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 10001;
+  }
 </style>
 </head>
 <body>
@@ -494,6 +587,14 @@
     <button class="btn" style="width:100%; margin-bottom:8px;" onclick="saveName()">Bắt đầu tương tác</button>
     <button class="btn btn-ghost" style="width:100%;" onclick="skipName()">Bỏ qua (Chỉ xem)</button>
   </div>
+</div>
+
+<!-- Image Lightbox: click ảnh → phóng to, cuộn chuột để zoom, kéo để di chuyển, ✕ hoặc ESC để đóng -->
+<div class="lightbox-overlay" id="lightbox">
+  <button class="lightbox-close" onclick="closeLightbox()" title="Đóng (Esc)">✕</button>
+  <div class="lightbox-zoom-badge" id="lightbox-zoom-badge">100%</div>
+  <img class="lightbox-img" id="lightbox-img" alt="">
+  <div class="lightbox-hint">Cuộn chuột để zoom · Kéo để di chuyển · ESC hoặc ✕ để đóng</div>
 </div>
 
 <header>
@@ -860,7 +961,7 @@ function renderPost(id, post){
       </div>
     </div>
     ${post.caption?`<div class="caption">${esc(post.caption)}</div>`:''}
-    ${post.imageBase64?`<img src="${post.imageBase64}" class="post-img" alt="">`:''}
+    ${post.imageBase64?`<img src="${post.imageBase64}" class="post-img" alt="" onclick="openLightbox(this.src)" title="Bấm để phóng to">`:''}
     
     <div class="actions">
       <button class="action-btn ${liked?'active-like':''}" onclick="toggleReact('${id}', 'like')" ${!currentUserName?'disabled':''}>
@@ -1094,6 +1195,9 @@ window.switchTab = (tab) => {
   document.getElementById('pane-shop').style.display = tab === 'shop' ? '' : 'none';
   document.getElementById('tab-feed').classList.toggle('active', tab === 'feed');
   document.getElementById('tab-shop').classList.toggle('active', tab === 'shop');
+  // Khi sang Tab Mua sắm → mở rộng layout, ẩn panel thành viên
+  const layoutEl = document.querySelector('.layout');
+  if(layoutEl) layoutEl.classList.toggle('tab-shop', tab === 'shop');
 };
 
 // ── Shopping Table ──
@@ -1281,6 +1385,146 @@ window.deleteRow = (i) => {
   saveShop();
   renderShopTable();
 };
+
+// ── Lightbox: xem ảnh phóng to ──
+// Trạng thái: zoom, vị trí translate, đang kéo hay không
+let lbZoom = 1, lbX = 0, lbY = 0;
+let lbDragging = false, lbStartX = 0, lbStartY = 0;
+let lbPinchStart = 0, lbPinchZoomStart = 1;
+
+const LB_MIN_ZOOM = 0.5;
+const LB_MAX_ZOOM = 8;
+
+function lbApplyTransform() {
+  const img = document.getElementById('lightbox-img');
+  if(!img) return;
+  img.style.transform = `translate(${lbX}px, ${lbY}px) scale(${lbZoom})`;
+  const badge = document.getElementById('lightbox-zoom-badge');
+  if(badge) badge.textContent = Math.round(lbZoom * 100) + '%';
+}
+
+window.openLightbox = (src) => {
+  if(!src) return;
+  const lb = document.getElementById('lightbox');
+  const img = document.getElementById('lightbox-img');
+  img.src = src;
+  lbZoom = 1; lbX = 0; lbY = 0;
+  lbApplyTransform();
+  lb.classList.add('active');
+  document.body.style.overflow = 'hidden';
+};
+
+window.closeLightbox = () => {
+  const lb = document.getElementById('lightbox');
+  if(!lb) return;
+  lb.classList.remove('active');
+  document.body.style.overflow = '';
+  // Reset sau khi đóng để lần mở sau ở 100%
+  lbZoom = 1; lbX = 0; lbY = 0; lbDragging = false;
+};
+
+// Cuộn chuột để zoom (chỉ hoạt động khi lightbox đang mở)
+document.addEventListener('wheel', (e) => {
+  const lb = document.getElementById('lightbox');
+  if(!lb || !lb.classList.contains('active')) return;
+  e.preventDefault();
+  // Zoom theo delta, mỗi bước +/- 12% của zoom hiện tại
+  const delta = e.deltaY < 0 ? 0.12 : -0.12;
+  const newZoom = Math.max(LB_MIN_ZOOM, Math.min(LB_MAX_ZOOM, lbZoom + delta * lbZoom));
+  lbZoom = newZoom;
+  // Khi zoom về 1 thì tự động căn giữa
+  if(lbZoom <= 1) { lbZoom = 1; lbX = 0; lbY = 0; }
+  lbApplyTransform();
+}, { passive: false });
+
+// Bắt đầu kéo chuột để pan (chỉ khi lightbox đang mở và không bấm vào nút ✕)
+document.addEventListener('mousedown', (e) => {
+  const lb = document.getElementById('lightbox');
+  if(!lb || !lb.classList.contains('active')) return;
+  if(e.target.closest('.lightbox-close')) return;
+  lbDragging = true;
+  lbStartX = e.clientX - lbX;
+  lbStartY = e.clientY - lbY;
+  document.getElementById('lightbox-img').classList.add('dragging');
+});
+
+document.addEventListener('mousemove', (e) => {
+  if(!lbDragging) return;
+  lbX = e.clientX - lbStartX;
+  lbY = e.clientY - lbStartY;
+  lbApplyTransform();
+});
+
+document.addEventListener('mouseup', () => {
+  if(lbDragging) {
+    lbDragging = false;
+    const img = document.getElementById('lightbox-img');
+    if(img) img.classList.remove('dragging');
+  }
+});
+
+// Hỗ trợ cảm ứng: pinch zoom trên mobile
+document.addEventListener('touchstart', (e) => {
+  const lb = document.getElementById('lightbox');
+  if(!lb || !lb.classList.contains('active')) return;
+  if(e.touches.length === 2) {
+    lbPinchStart = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    lbPinchZoomStart = lbZoom;
+  } else if(e.touches.length === 1) {
+    lbDragging = true;
+    lbStartX = e.touches[0].clientX - lbX;
+    lbStartY = e.touches[0].clientY - lbY;
+  }
+}, { passive: true });
+
+document.addEventListener('touchmove', (e) => {
+  const lb = document.getElementById('lightbox');
+  if(!lb || !lb.classList.contains('active')) return;
+  if(e.touches.length === 2) {
+    e.preventDefault();
+    const dist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    lbZoom = Math.max(LB_MIN_ZOOM, Math.min(LB_MAX_ZOOM, lbPinchZoomStart * (dist / lbPinchStart)));
+    if(lbZoom <= 1) { lbZoom = 1; lbX = 0; lbY = 0; }
+    lbApplyTransform();
+  } else if(e.touches.length === 1 && lbDragging) {
+    e.preventDefault();
+    lbX = e.touches[0].clientX - lbStartX;
+    lbY = e.touches[0].clientY - lbStartY;
+    lbApplyTransform();
+  }
+}, { passive: false });
+
+document.addEventListener('touchend', () => {
+  lbDragging = false;
+});
+
+// Nhấn ESC để đóng + double-click để reset zoom
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape') closeLightbox();
+});
+
+document.addEventListener('dblclick', (e) => {
+  const lb = document.getElementById('lightbox');
+  if(!lb || !lb.classList.contains('active')) return;
+  if(e.target.closest('.lightbox-close')) return;
+  // Double click → toggle giữa 100% và 200%
+  if(lbZoom < 1.5) { lbZoom = 2; }
+  else { lbZoom = 1; lbX = 0; lbY = 0; }
+  lbApplyTransform();
+});
+
+// Click nền đen để đóng (nhưng không click vào ảnh hoặc nút)
+document.addEventListener('click', (e) => {
+  const lb = document.getElementById('lightbox');
+  if(!lb || !lb.classList.contains('active')) return;
+  if(e.target === lb) closeLightbox();
+});
 
 // ── Init ──
 initTheme();
