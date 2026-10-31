@@ -570,7 +570,7 @@
 <!-- Name Setup Modal -->
 <div id="name-modal" class="modal-overlay">
   <div class="modal-content">
-    <h2>🐢 Chào mừng đến Project Feed</h2>
+    <h2>🐢 Chào mừng đến Project Feedback</h2>
     <p>Hãy nhập tên và chọn ảnh đại diện để đăng bài, bình luận và tương tác. Có thể bỏ qua để chỉ xem bài viết.</p>
     <div class="avatar-picker">
       <div class="avatar-preview" id="avatar-preview" onclick="pickAvatar()">
@@ -599,7 +599,7 @@
 
 <header>
   <div class="header-wrap">
-    <h1>Project Feed 🐢</h1>
+    <h1>TRMi "Timeline"🐢</h1>
     <div class="header-actions">
       <button class="user-chip" onclick="changeName()" id="user-chip">👤 Đặt tên</button>
       <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙 Dark Mode</button>
@@ -611,7 +611,7 @@
 <div class="wrap">
   <!-- Firebase Config Section (Auto hide if saved) -->
   <div class="card" id="config-card">
-    <b>Kết nối Firebase</b> <span style="color:var(--text-secondary); font-size:13px;">(Chỉ làm 1 lần)</span>
+    <b>Kết nối Firebase</b> <span style="color:var(--text-secondary); font-size:15px;">(Chỉ làm 1 lần)</span>
     <textarea id="config-input" style="margin-top:8px; height:100px;" placeholder='const firebaseConfig = { apiKey: "...", projectId: "..." };'></textarea>
     <div class="row" style="margin-top:8px; justify-content: flex-end;">
       <button class="btn" onclick="saveConfig()">Kết nối</button>
@@ -1207,6 +1207,7 @@ const STATUS_OPTS = [
   { val: 'shopee',     label: '🛍 Shopee Searching',   cls: 's-shopee'    },
   { val: 'searching',  label: '🔍 Inventory Search\'ing', cls: 's-searching'},
   { val: 'nohave',     label: '❌ No have',            cls: 's-nohave'    },
+  { val: 'teamate',    label: '👀Teammate Searching',  cls: 's-searching'},
 ];
 
 let shopRows = JSON.parse(localStorage.getItem('shopRows') || '[]');
