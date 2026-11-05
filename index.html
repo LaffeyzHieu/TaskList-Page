@@ -482,6 +482,49 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* ── Drag handle để di chuyển dòng ── */
+  .drag-handle {
+    width: 30px;
+    text-align: center;
+    cursor: grab;
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: color 0.15s, background 0.15s;
+    border-right: 1px solid var(--border-color);
+  }
+  .drag-handle:hover {
+    color: var(--primary);
+    background: var(--input-bg);
+  }
+  .drag-handle:active { cursor: grabbing; }
+  table.shop tr.dragging-row { opacity: 0.45; }
+  table.shop tr.drag-over-top    > td { box-shadow: inset 0 3px 0 0 var(--primary); }
+  table.shop tr.drag-over-bottom > td { box-shadow: inset 0 -3px 0 0 var(--primary); }
+  table.shop tr.drag-over-top > td:first-child,
+  table.shop tr.drag-over-bottom > td:first-child { border-radius: 0; }
+
+  /* Gợi ý kéo thả — nhúng vào toolbar */
+  .shop-hint {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+    width: 100%;
+    text-align: center;
+  }
+  .shop-hint kbd {
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 11px;
+    font-family: inherit;
+    color: var(--text-color);
+  }
+
   /* ── Lightbox: xem ảnh phóng to ── */
   .lightbox-overlay {
     position: fixed;
@@ -570,7 +613,7 @@
 <!-- Name Setup Modal -->
 <div id="name-modal" class="modal-overlay">
   <div class="modal-content">
-    <h2>🐢 Chào mừng đến Project Feedback</h2>
+    <h2>🐢 Chào mừng đến Project Feed</h2>
     <p>Hãy nhập tên và chọn ảnh đại diện để đăng bài, bình luận và tương tác. Có thể bỏ qua để chỉ xem bài viết.</p>
     <div class="avatar-picker">
       <div class="avatar-preview" id="avatar-preview" onclick="pickAvatar()">
@@ -599,7 +642,7 @@
 
 <header>
   <div class="header-wrap">
-    <h1>TRMi "Timeline"🐢</h1>
+    <h1>Project Feed 🐢</h1>
     <div class="header-actions">
       <button class="user-chip" onclick="changeName()" id="user-chip">👤 Đặt tên</button>
       <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙 Dark Mode</button>
@@ -611,7 +654,7 @@
 <div class="wrap">
   <!-- Firebase Config Section (Auto hide if saved) -->
   <div class="card" id="config-card">
-    <b>Kết nối Firebase</b> <span style="color:var(--text-secondary); font-size:15px;">(Chỉ làm 1 lần)</span>
+    <b>Kết nối Firebase</b> <span style="color:var(--text-secondary); font-size:13px;">(Chỉ làm 1 lần)</span>
     <textarea id="config-input" style="margin-top:8px; height:100px;" placeholder='const firebaseConfig = { apiKey: "...", projectId: "..." };'></textarea>
     <div class="row" style="margin-top:8px; justify-content: flex-end;">
       <button class="btn" onclick="saveConfig()">Kết nối</button>
@@ -652,11 +695,13 @@
             <span id="total-diff-wrap">Chênh lệch: <strong id="total-diff" class="diff-pos">0₫</strong></span>
           </div>
           <button class="btn" onclick="addShopRow()">+ Thêm dòng</button>
+          <div class="shop-hint">Mẹo: bấm <kbd>Enter</kbd> ở khoảng trống để thêm dòng mới · kéo tay cầm <kbd>⠿</kbd> để đổi vị trí dòng</div>
         </div>
         <div class="shop-table-wrap">
           <table class="shop">
             <thead>
               <tr>
+                <th style="width:34px"></th>
                 <th style="width:20%">Sản phẩm</th>
                 <th style="width:16%">Giá dự kiến</th>
                 <th style="width:16%">Giá thực</th>
@@ -1207,8 +1252,6 @@ const STATUS_OPTS = [
   { val: 'shopee',     label: '🛍 Shopee Searching',   cls: 's-shopee'    },
   { val: 'searching',  label: '🔍 Inventory Search\'ing', cls: 's-searching'},
   { val: 'nohave',     label: '❌ No have',            cls: 's-nohave'    },
-  { val: 'teamate',    label: '👀Teammate Search\'ing',  cls: 's-searching'},
-  { val: 'buyed',      label: '✅ Buy\'ed',            cls: 's-inventory'},
 ];
 
 let shopRows = JSON.parse(localStorage.getItem('shopRows') || '[]');
@@ -1240,7 +1283,7 @@ function renderShopTable() {
   const tbody = document.getElementById('shop-tbody');
   if(!tbody) return;
   if(shopRows.length === 0){
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-secondary)">Chưa có sản phẩm nào. Bấm "+ Thêm dòng"!</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text-secondary)">Chưa có sản phẩm nào. Bấm \"+ Thêm dòng\" hoặc phím Enter ở khoảng trống!</td></tr>`;
     calcTotals(); return;
   }
   tbody.innerHTML = shopRows.map((r, i) => {
@@ -1269,7 +1312,11 @@ function renderShopTable() {
 
     // Enter → blur (thoát khỏi ô input)
     const entBlur = ` onkeydown="if(event.key==='Enter') this.blur()"`;
-    return `<tr>
+    // Ô drag handle là phần tử draggable (giúp input/select trong các ô khác không bị ảnh hưởng)
+    // Dragover/drop vẫn đặt trên <tr> để có chỉ thị vị trí chèn trên cả dòng
+    const trDragOverDrop = ` ondragover="onRowDragOver(event,${i})" ondragleave="onRowDragLeave(event)" ondrop="onRowDrop(event,${i})"`;
+    return `<tr data-i="${i}"${trDragOverDrop}>
+      <td class="drag-handle" draggable="true" ondragstart="onRowDragStart(event,${i})" ondragend="onRowDragEnd(event)" title="Kéo để di chuyển dòng">⠿</td>
       <td><input class="shop-input" placeholder="Tên sản phẩm..." value="${esc(r.name||'')}" oninput="updateRow(${i},'name',this.value)"${entBlur}></td>
       <td><div class="price-split">
         <input type="number" class="shop-input price-thousands" placeholder="0" value="${estK || ''}" oninput="setPricePart(${i},'estimated','thousands',this.value)"${entBlur}>
@@ -1281,7 +1328,7 @@ function renderShopTable() {
         <span class="price-sep">.</span>
         <input type="text" inputmode="numeric" maxlength="3" data-field="actual" class="shop-input price-last3" placeholder="000" value="${actL3Str}" ${actLocked} oninput="setPricePart(${i},'actual','last3',this.value)" onfocus="this.select()" onblur="this.value=String(Number(this.value)||0).padStart(3,'0')"${entBlur}>
       </div></td>
-      <td>${diffHtml}</td>
+      <td class="diff-cell">${diffHtml}</td>
       <td><input class="shop-input" placeholder="https://..." value="${esc(r.link||'')}" oninput="updateRow(${i},'link',this.value)"${entBlur}>${r.link ? `<a href="${esc(r.link)}" target="_blank" class="shop-link">Mở ↗</a>` : ''}</td>
       <td><select class="status-select ${statusCls}" onchange="updateRow(${i},'status',this.value)"${entBlur}>${statusOpts}</select></td>
       <td class="last-modified" data-i="${i}">${lastMod}</td>
@@ -1371,7 +1418,9 @@ function updateRowDiff(i) {
   const tr = document.getElementById('shop-tbody').querySelectorAll('tr')[i];
   if(!tr) return;
   const r = shopRows[i];
-  const diffCell = tr.children[3]; // cột thứ 4 là ±
+  // Sau khi thêm cột drag handle: ô ± là td.diff-cell (không phụ thuộc index)
+  const diffCell = tr.querySelector('.diff-cell');
+  if(!diffCell) return;
   const diff = (r.estimated && r.actual)
     ? Number(r.actual) - Number(r.estimated) : null;
   if(diff === null) {
@@ -1386,6 +1435,106 @@ window.deleteRow = (i) => {
   shopRows.splice(i, 1);
   saveShop();
   renderShopTable();
+};
+
+// ── Drag & Drop: di chuyển dòng sản phẩm ──
+let dragSrcIndex = -1;
+
+// Bắt đầu kéo — ô drag handle là phần tử draggable (input/select không bị dính)
+window.onRowDragStart = (e, i) => {
+  // Nếu user somehow bắt đầu drag từ form control → huỷ (an toàn)
+  const tag = (e.target.tagName || '').toLowerCase();
+  if(tag === 'input' || tag === 'textarea' || tag === 'select' || tag === 'option') {
+    e.preventDefault();
+    return;
+  }
+  dragSrcIndex = i;
+  e.dataTransfer.effectAllowed = 'move';
+  // Firefox cần setData mới cho phép drag
+  try { e.dataTransfer.setData('text/plain', String(i)); } catch(_) {}
+  // Đánh dấu dòng đang được kéo (currentTarget là ô drag-handle, parentElement là <tr>)
+  const tr = e.currentTarget.closest('tr');
+  if(tr) tr.classList.add('dragging-row');
+};
+
+// Kết thúc kéo (bình thường hay huỷ) → dọn dẹp class
+window.onRowDragEnd = (e) => {
+  const tr = e.currentTarget.closest('tr');
+  if(tr) tr.classList.remove('dragging-row');
+  document.querySelectorAll('table.shop tr').forEach(tr => {
+    tr.classList.remove('drag-over-top', 'drag-over-bottom');
+  });
+  dragSrcIndex = -1;
+};
+
+// Dragover trên mỗi dòng → tính xem chuột ở nửa trên hay nửa dưới để chỉ thị vị trí chèn
+window.onRowDragOver = (e, i) => {
+  if(dragSrcIndex < 0) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const tr = e.currentTarget;
+  const rect = tr.getBoundingClientRect();
+  const isTop = (e.clientY - rect.top) < rect.height / 2;
+  tr.classList.toggle('drag-over-top', isTop);
+  tr.classList.toggle('drag-over-bottom', !isTop);
+};
+
+window.onRowDragLeave = (e) => {
+  e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom');
+};
+
+// Thả chuột → di chuyển dòng
+window.onRowDrop = (e, i) => {
+  e.preventDefault();
+  e.stopPropagation();
+  if(dragSrcIndex < 0 || dragSrcIndex === i) {
+    document.querySelectorAll('table.shop tr').forEach(tr => tr.classList.remove('drag-over-top','drag-over-bottom'));
+    return;
+  }
+  const tr = e.currentTarget;
+  const rect = tr.getBoundingClientRect();
+  const isTop = (e.clientY - rect.top) < rect.height / 2;
+  let targetIndex = isTop ? i : i + 1;
+  // Di chuyển phần tử
+  const moved = shopRows.splice(dragSrcIndex, 1)[0];
+  // Nếu kéo từ trên xuống dưới, sau splice index đã giảm 1
+  if(dragSrcIndex < targetIndex) targetIndex--;
+  shopRows.splice(targetIndex, 0, moved);
+  saveShop();
+  renderShopTable();
+};
+
+// ── Enter ở ngoài ô nhập (trong pane-shop) → thêm dòng mới ──
+document.addEventListener('keydown', (e) => {
+  if(e.key !== 'Enter') return;
+  // Chỉ xử lý khi Tab Mua sắm đang hiển thị
+  const pane = document.getElementById('pane-shop');
+  if(!pane || pane.style.display === 'none') return;
+  // Nếu đang focus vào một ô nhập liệu thì bỏ qua (đã có entBlur tự blur)
+  const t = (e.target.tagName || '').toLowerCase();
+  if(t === 'input' || t === 'textarea' || t === 'select' || t === 'option') return;
+  // Không bấm ở trong nút "+ Thêm dòng" hay nút xoá (vẫn enter được khi focus)
+  if(e.target.closest('button')) return;
+  // Ngăn scroll trang khi bấm Enter ở body
+  e.preventDefault();
+  // Thêm dòng mới và focus vào ô tên sản phẩm của dòng đó
+  addShopRowAndFocus();
+});
+
+// Thêm dòng mới rồi tự focus vào ô "Tên sản phẩm"
+window.addShopRowAndFocus = () => {
+  shopRows.push({ name:'', estimated:0, actual:0, link:'', status:'searching', lastModified: Date.now() });
+  saveShop();
+  renderShopTable();
+  // Focus vào ô tên của dòng vừa thêm (dòng cuối)
+  setTimeout(() => {
+    const rows = document.querySelectorAll('#shop-tbody tr');
+    const lastRow = rows[rows.length - 1];
+    if(lastRow) {
+      const nameInput = lastRow.querySelector('input.shop-input');
+      if(nameInput) nameInput.focus();
+    }
+  }, 30);
 };
 
 // ── Lightbox: xem ảnh phóng to ──
