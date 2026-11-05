@@ -369,7 +369,7 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
-    min-width: 1080px;
+    min-width: 1380px;
   }
   table.shop th {
     padding: 14px 16px;
@@ -523,6 +523,261 @@
     font-size: 11px;
     font-family: inherit;
     color: var(--text-color);
+  }
+
+  /* ── Multi-board: bảng chi phí ── */
+  .shop-global-toolbar {
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    padding: 16px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 1rem;
+  }
+  .shop-global-toolbar .shop-totals {
+    font-size: 15px;
+  }
+  .shop-global-toolbar .shop-totals strong { font-size: 16px; }
+  .shop-toolbar-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* Boards list — toggle hiển thị từng bảng */
+  .boards-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 14px 18px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    align-items: center;
+  }
+  .boards-list-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-right: 4px;
+  }
+  .board-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 99px;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.15s;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .board-chip:hover { border-color: var(--primary); color: var(--primary); }
+  .board-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .board-chip.active .chip-mini { color: rgba(255,255,255,0.7); }
+  .board-chip input[type=checkbox] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    accent-color: var(--primary);
+  }
+  .board-chip .chip-name {
+    pointer-events: none;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .board-chip .chip-mini {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-left: 4px;
+    pointer-events: none;
+  }
+
+  /* Board wrapper — mỗi bảng */
+  .board-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+  .board-card.board-hidden { display: none; }
+  .board-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--input-bg);
+    flex-wrap: wrap;
+  }
+  .board-card.minimized .board-header { border-bottom: none; }
+  .board-collapse-handle {
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-secondary);
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: 0.15s;
+    user-select: none;
+    -webkit-user-select: none;
+    flex-shrink: 0;
+  }
+  .board-collapse-handle:hover { background: var(--border-color); color: var(--text-color); }
+  .board-title-wrap {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .board-title {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-color);
+    font-family: inherit;
+    min-width: 100px;
+    max-width: 100%;
+    flex: 1;
+  }
+  .board-title:hover { border-color: var(--border-color); background: var(--card-bg); }
+  .board-title:focus { outline: none; border-color: var(--primary); background: var(--card-bg); }
+  .board-rows-count {
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 3px 10px;
+    border-radius: 99px;
+    flex-shrink: 0;
+  }
+  .board-totals {
+    display: flex;
+    gap: 14px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    flex-wrap: wrap;
+  }
+  .board-totals strong { color: var(--text-color); }
+  .board-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+  .board-btn {
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-color);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: 0.15s;
+  }
+  .board-btn:hover { background: var(--border-color); }
+  .board-btn.btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .board-btn.btn-primary:hover { background: var(--primary-hover); }
+  .board-btn.btn-danger { color: var(--danger); }
+  .board-btn.btn-danger:hover { background: rgba(228,30,63,0.1); border-color: var(--danger); }
+
+  .board-card.minimized .board-toolbar,
+  .board-card.minimized .board-table-wrap { display: none; }
+
+  .board-toolbar {
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    gap: 8px;
+    flex-wrap: wrap;
+    background: var(--card-bg);
+  }
+
+  /* Ô nhập số lượng — căn giữa, hẹp */
+  .qty-input {
+    width: 100%;
+    max-width: 70px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-color);
+    font-size: 14px;
+    font-family: inherit;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    transition: 0.15s;
+  }
+  .qty-input:hover { border-color: var(--border-color); }
+  .qty-input:focus { outline: none; border-color: var(--primary); background: var(--card-bg); }
+  .qty-input::placeholder { color: var(--text-secondary); opacity: 0.6; }
+
+  /* Cột số lượng — nền nhẹ để phân biệt */
+  td.qty-cell {
+    background: rgba(24, 119, 242, 0.04);
+    text-align: center;
+  }
+  [data-theme="dark"] td.qty-cell { background: rgba(45, 136, 255, 0.06); }
+  table.shop tr:hover td.qty-cell { background: var(--input-bg); }
+
+  /* Badge tổng số lượng ở header bảng */
+  .qty-summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 3px 10px;
+    border-radius: 99px;
+    flex-shrink: 0;
+  }
+  .qty-summary strong { color: var(--text-color); font-variant-numeric: tabular-nums; }
+
+  /* Empty boards state */
+  .boards-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+  }
+  .boards-empty-icon {
+    font-size: 56px;
+    margin-bottom: 12px;
+    opacity: 0.7;
+  }
+  .boards-empty-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 8px;
+  }
+  .boards-empty-sub {
+    font-size: 14px;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.5;
   }
 
   /* ── Lightbox: xem ảnh phóng to ── */
@@ -687,34 +942,34 @@
 
     <!-- TAB: SHOPPING -->
     <div id="pane-shop" style="display:none">
-      <div class="shop-card">
-        <div class="shop-toolbar">
-          <div class="shop-totals">
-            <span>Dự kiến: <strong id="total-estimated">0₫</strong></span>
-            <span>Thực tế: <strong id="total-actual">0₫</strong></span>
-            <span id="total-diff-wrap">Chênh lệch: <strong id="total-diff" class="diff-pos">0₫</strong></span>
-          </div>
-          <button class="btn" onclick="addShopRow()">+ Thêm dòng</button>
-          <div class="shop-hint">Mẹo: bấm <kbd>Enter</kbd> ở khoảng trống để thêm dòng mới · kéo tay cầm <kbd>⠿</kbd> để đổi vị trí dòng</div>
+      <!-- Top toolbar: tổng tất cả các bảng + điều khiển chung -->
+      <div class="shop-global-toolbar">
+        <div class="shop-totals">
+          <span>📊 Tổng dự kiến: <strong id="grand-total-estimated">0₫</strong></span>
+          <span>Tổng thực tế: <strong id="grand-total-actual">0₫</strong></span>
+          <span id="grand-total-diff-wrap">Chênh lệch: <strong id="grand-total-diff" class="diff-pos">0₫</strong></span>
         </div>
-        <div class="shop-table-wrap">
-          <table class="shop">
-            <thead>
-              <tr>
-                <th style="width:34px"></th>
-                <th style="width:20%">Sản phẩm</th>
-                <th style="width:16%">Giá dự kiến</th>
-                <th style="width:16%">Giá thực</th>
-                <th style="width:7%">±</th>
-                <th style="width:14%">Link</th>
-                <th style="width:13%">Trạng thái</th>
-                <th style="width:10%">Sửa lần cuối</th>
-                <th style="width:4%"></th>
-              </tr>
-            </thead>
-            <tbody id="shop-tbody"></tbody>
-          </table>
+        <div class="shop-toolbar-actions">
+          <button class="btn btn-ghost" onclick="toggleBoardsList()" id="boards-list-btn" title="Hiện/ẩn danh sách bảng">📋 Hiện bảng</button>
+          <button class="btn btn-ghost" onclick="exportShopJSON()" title="Tải xuống file JSON chứa toàn bộ bảng và dòng">⬆️ Xuất JSON</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('import-json-input').click()" title="Nhập từ file JSON (ghi đè hoặc gộp)">⬇️ Nhập JSON</button>
+          <input type="file" id="import-json-input" accept="application/json,.json" style="display:none" onchange="importShopJSON(event)">
+          <button class="btn" onclick="addShopBoard()">+ Tạo bảng</button>
         </div>
+        <div class="shop-hint">Mẹo: bấm <kbd>Enter</kbd> ở khoảng trống để thêm dòng · kéo <kbd>⠿</kbd> để đổi vị trí dòng · bấm <kbd>+</kbd> để tạo bảng chi phí mới</div>
+      </div>
+
+      <!-- Danh sách bảng (show/hide) — dùng để ẩn/hiện từng bảng -->
+      <div class="boards-list" id="boards-list" style="display:none"></div>
+
+      <!-- Vùng chứa tất cả các bảng -->
+      <div id="boards-container"></div>
+
+      <!-- Trạng thái rỗng khi chưa có bảng nào hoặc tất cả đều ẩn -->
+      <div class="boards-empty" id="boards-empty" style="display:none">
+        <div class="boards-empty-icon">📋</div>
+        <div class="boards-empty-title">Chưa có bảng chi phí nào</div>
+        <div class="boards-empty-sub">Bấm <strong>+ Tạo bảng</strong> để tạo bảng đầu tiên (vd: Linh kiện điện tử, Vận chuyển, Ăn uống...)</div>
       </div>
     </div>
   </div>
@@ -1254,10 +1509,40 @@ const STATUS_OPTS = [
   { val: 'nohave',     label: '❌ No have',            cls: 's-nohave'    },
 ];
 
-let shopRows = JSON.parse(localStorage.getItem('shopRows') || '[]');
+// ── Multi-board Shopping: dữ liệu & helpers ──
+// Cấu trúc: shopBoards[] = [{id, name, minimized, hidden, rows[]}]
+// Mỗi row = {name, estimated, actual, link, status, lastModified}
 
-function saveShop() {
-  localStorage.setItem('shopRows', JSON.stringify(shopRows));
+function genBoardId() {
+  return 'b_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
+}
+
+function loadBoards() {
+  // Migration: nếu có shopRows cũ → chuyển thành 1 bảng "Bảng chính"
+  const old = localStorage.getItem('shopRows');
+  if(old && !localStorage.getItem('shopBoards')) {
+    try {
+      const rows = JSON.parse(old);
+      if(Array.isArray(rows) && rows.length) {
+        return [{ id: genBoardId(), name: 'Bảng chính', minimized: false, hidden: false, rows }];
+      }
+    } catch(_){}
+  }
+  const saved = localStorage.getItem('shopBoards');
+  if(saved) {
+    try { return JSON.parse(saved); } catch(_) {}
+  }
+  return [];
+}
+
+let shopBoards = loadBoards();
+// Sau khi load, nếu migration đã chạy → lưu lại để các lần sau đọc từ shopBoards
+if(shopBoards.length > 0 && !localStorage.getItem('shopBoards')) {
+  saveBoards();
+}
+
+function saveBoards() {
+  localStorage.setItem('shopBoards', JSON.stringify(shopBoards));
 }
 
 function fmtVND(n) {
@@ -1265,135 +1550,36 @@ function fmtVND(n) {
   return Number(n).toLocaleString('vi-VN') + '₫';
 }
 
-function calcTotals() {
+// Tính tổng cho 1 bảng (board), trả về {est, act, diff}
+function boardTotals(board) {
   let est = 0, act = 0;
-  shopRows.forEach(r => {
+  (board.rows || []).forEach(r => {
     if(r.estimated) est += Number(r.estimated) || 0;
     if(r.actual)    act += Number(r.actual)    || 0;
   });
-  document.getElementById('total-estimated').textContent = fmtVND(est);
-  document.getElementById('total-actual').textContent    = fmtVND(act);
+  return { est, act, diff: act - est };
+}
+
+// Tính tổng tất cả các bảng KHÔNG ẩn (visible), hiển thị ở thanh trên cùng
+function calcGrandTotals() {
+  let est = 0, act = 0;
+  shopBoards.forEach(b => {
+    if(b.hidden) return;
+    const t = boardTotals(b);
+    est += t.est; act += t.act;
+  });
+  document.getElementById('grand-total-estimated').textContent = fmtVND(est);
+  document.getElementById('grand-total-actual').textContent    = fmtVND(act);
   const diff = act - est;
-  const el = document.getElementById('total-diff');
+  const el = document.getElementById('grand-total-diff');
   el.textContent = (diff >= 0 ? '+' : '') + fmtVND(diff);
   el.className = diff > 0 ? 'diff-neg' : diff < 0 ? 'diff-pos' : '';
 }
 
-function renderShopTable() {
-  const tbody = document.getElementById('shop-tbody');
-  if(!tbody) return;
-  if(shopRows.length === 0){
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text-secondary)">Chưa có sản phẩm nào. Bấm \"+ Thêm dòng\" hoặc phím Enter ở khoảng trống!</td></tr>`;
-    calcTotals(); return;
-  }
-  tbody.innerHTML = shopRows.map((r, i) => {
-    const est = Number(r.estimated) || 0;
-    const act = Number(r.actual) || 0;
-    const estK = Math.floor(est / 1000);
-    const estL = est % 1000;
-    const actK = Math.floor(act / 1000);
-    const actL = act % 1000;
-    const estL3Str = String(estL).padStart(3, '0');
-    const actL3Str = String(actL).padStart(3, '0');
-    // Ô lẻ chỉ disabled khi chưa nhập gì (est/act = 0 và chưa có data)
-    const estLocked = (r.estimated === '' || r.estimated === null || r.estimated === undefined) ? 'disabled' : '';
-    const actLocked = (r.actual    === '' || r.actual    === null || r.actual    === undefined) ? 'disabled' : '';
-
-    const diff = (r.estimated && r.actual)
-      ? act - est : null;
-    const diffHtml = diff !== null
-      ? `<span class="price-diff ${diff > 0 ? 'diff-neg' : diff < 0 ? 'diff-pos' : ''}">${diff >= 0 ? '+' : ''}${fmtVND(diff)}</span>`
-      : '—';
-    const statusOpts = STATUS_OPTS.map(o =>
-      `<option value="${o.val}" ${r.status === o.val ? 'selected' : ''}>${o.label}</option>`
-    ).join('');
-    const statusCls = STATUS_OPTS.find(o => o.val === r.status)?.cls || '';
-    const lastMod = r.lastModified ? fmtLastMod(r.lastModified) : '—';
-
-    // Enter → blur (thoát khỏi ô input)
-    const entBlur = ` onkeydown="if(event.key==='Enter') this.blur()"`;
-    // Ô drag handle là phần tử draggable (giúp input/select trong các ô khác không bị ảnh hưởng)
-    // Dragover/drop vẫn đặt trên <tr> để có chỉ thị vị trí chèn trên cả dòng
-    const trDragOverDrop = ` ondragover="onRowDragOver(event,${i})" ondragleave="onRowDragLeave(event)" ondrop="onRowDrop(event,${i})"`;
-    return `<tr data-i="${i}"${trDragOverDrop}>
-      <td class="drag-handle" draggable="true" ondragstart="onRowDragStart(event,${i})" ondragend="onRowDragEnd(event)" title="Kéo để di chuyển dòng">⠿</td>
-      <td><input class="shop-input" placeholder="Tên sản phẩm..." value="${esc(r.name||'')}" oninput="updateRow(${i},'name',this.value)"${entBlur}></td>
-      <td><div class="price-split">
-        <input type="number" class="shop-input price-thousands" placeholder="0" value="${estK || ''}" oninput="setPricePart(${i},'estimated','thousands',this.value)"${entBlur}>
-        <span class="price-sep">.</span>
-        <input type="text" inputmode="numeric" maxlength="3" data-field="estimated" class="shop-input price-last3" placeholder="000" value="${estL3Str}" ${estLocked} oninput="setPricePart(${i},'estimated','last3',this.value)" onfocus="this.select()" onblur="this.value=String(Number(this.value)||0).padStart(3,'0')"${entBlur}>
-      </div></td>
-      <td><div class="price-split">
-        <input type="number" class="shop-input price-thousands" placeholder="0" value="${actK || ''}" oninput="setPricePart(${i},'actual','thousands',this.value)"${entBlur}>
-        <span class="price-sep">.</span>
-        <input type="text" inputmode="numeric" maxlength="3" data-field="actual" class="shop-input price-last3" placeholder="000" value="${actL3Str}" ${actLocked} oninput="setPricePart(${i},'actual','last3',this.value)" onfocus="this.select()" onblur="this.value=String(Number(this.value)||0).padStart(3,'0')"${entBlur}>
-      </div></td>
-      <td class="diff-cell">${diffHtml}</td>
-      <td><input class="shop-input" placeholder="https://..." value="${esc(r.link||'')}" oninput="updateRow(${i},'link',this.value)"${entBlur}>${r.link ? `<a href="${esc(r.link)}" target="_blank" class="shop-link">Mở ↗</a>` : ''}</td>
-      <td><select class="status-select ${statusCls}" onchange="updateRow(${i},'status',this.value)"${entBlur}>${statusOpts}</select></td>
-      <td class="last-modified" data-i="${i}">${lastMod}</td>
-      <td><button class="del-row-btn" onclick="deleteRow(${i})" title="Xóa">🗑</button></td>
-    </tr>`;
-  }).join('');
-  calcTotals();
+// Tìm board theo id
+function getBoard(id) {
+  return shopBoards.find(b => b.id === id);
 }
-
-window.addShopRow = () => {
-  shopRows.push({ name:'', estimated:0, actual:0, link:'', status:'searching', lastModified: Date.now() });
-  saveShop();
-  renderShopTable();
-};
-
-// Cập nhật ô giá theo phần (thousands/last3) — KHÔNG re-render cả bảng để giữ focus
-window.setPricePart = (i, field, part, val) => {
-  const current = Number(shopRows[i][field]) || 0;
-  let thousands = Math.floor(current / 1000);
-  let last3 = current % 1000;
-
-  if(part === 'thousands') {
-    thousands = Math.max(0, Math.floor(Number(val) || 0));
-  } else if(part === 'last3') {
-    // Luôn cho nhập — không cần điều kiện thousands
-    let n = Math.max(0, Math.min(999, Math.floor(Number(val) || 0)));
-    last3 = n;
-  }
-
-  shopRows[i][field] = thousands * 1000 + last3;
-  shopRows[i].lastModified = Date.now();
-  saveShop();
-
-  // Cập nhật riêng ô ± + tổng + cột sửa lần cuối
-  updateRowDiff(i);
-  calcTotals();
-  updateLastModifiedCell(i);
-
-  // Nếu phần thousands vừa đổi, bật/tắt ô lẻ tương ứng
-  // disabled chỉ khi user chưa nhập gì vào ô thousands (val rỗng)
-  if(part === 'thousands') {
-    const row = document.getElementById('shop-tbody').querySelectorAll('tr')[i];
-    if(row) {
-      const last3Input = row.querySelector(`.price-last3[data-field="${field}"]`) ||
-                         row.querySelectorAll('.price-last3')[field === 'estimated' ? 0 : 1];
-      if(last3Input) {
-        const shouldEnable = val !== '' && val !== null && val !== undefined;
-        last3Input.disabled = !shouldEnable;
-      }
-    }
-  }
-};
-
-window.updateRow = (i, field, val) => {
-  shopRows[i][field] = val;
-  shopRows[i].lastModified = Date.now();
-  saveShop();
-  // Không re-render cả bảng (sẽ làm mất focus input đang gõ).
-  // Chỉ cập nhật ô chênh lệch của dòng đó + tổng cộng + cột sửa lần cuối.
-  if(field === 'estimated' || field === 'actual') {
-    updateRowDiff(i);
-    calcTotals();
-  }
-  updateLastModifiedCell(i);
-};
 
 // Định dạng "HH:mm / DD-MM-YYYY"
 function fmtLastMod(ts) {
@@ -1402,23 +1588,454 @@ function fmtLastMod(ts) {
   return `${pad(d.getHours())}:${pad(d.getMinutes())} / ${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}`;
 }
 
-// Cập nhật riêng cột "Sửa lần cuối" của 1 dòng
-function updateLastModifiedCell(i) {
-  const row = document.getElementById('shop-tbody').querySelectorAll('tr')[i];
-  if(!row) return;
-  // Cột "Sửa lần cuối" là cột index 6 (sau Trạng thái, trước Delete)
-  const cell = row.querySelector('.last-modified');
-  if(cell) {
-    cell.textContent = fmtLastMod(Date.now());
+// Render tất cả bảng + chip-list + empty state + tổng
+function renderAllBoards() {
+  const container = document.getElementById('boards-container');
+  if(!container) return;
+
+  // Render chip list
+  renderBoardsList();
+
+  // Render boards — dùng try/catch để tránh lỗi nếu DOM đang trong trạng thái trung gian
+  try {
+    container.innerHTML = shopBoards.map(b => renderBoardCard(b)).join('');
+  } catch(e) {
+    // Nếu DOM bị thao tác bởi event handler khác → defer render sang frame sau
+    setTimeout(() => {
+      try { container.innerHTML = shopBoards.map(b => renderBoardCard(b)).join(''); } catch(_){}
+    }, 0);
+    return;
+  }
+
+  // Hiển thị empty state nếu không có bảng hoặc tất cả đều ẩn
+  const empty = document.getElementById('boards-empty');
+  const visibleCount = shopBoards.filter(b => !b.hidden).length;
+  if(shopBoards.length === 0 || visibleCount === 0) {
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+  }
+
+  // Cập nhật tổng tất cả
+  calcGrandTotals();
+
+  // Cập nhật tiêu đề nút "Hiện bảng" theo số bảng đang ẩn
+  updateBoardsListBtn();
+}
+
+// Hiển thị nút "Hiện bảng" với số lượng ẩn/hiện
+function updateBoardsListBtn() {
+  const btn = document.getElementById('boards-list-btn');
+  if(!btn) return;
+  const total = shopBoards.length;
+  const visible = shopBoards.filter(b => !b.hidden).length;
+  if(total === 0) {
+    btn.textContent = '📋 Hiện bảng';
+    btn.style.opacity = '0.5';
+    btn.disabled = true;
+  } else {
+    btn.style.opacity = '';
+    btn.disabled = false;
+    btn.textContent = `📋 Hiện bảng (${visible}/${total})`;
   }
 }
 
-// Cập nhật riêng ô ± của 1 dòng, không đụng tới các input
-function updateRowDiff(i) {
-  const tr = document.getElementById('shop-tbody').querySelectorAll('tr')[i];
+// Render chip list để tick ẩn/hiện từng bảng
+function renderBoardsList() {
+  const list = document.getElementById('boards-list');
+  if(!list) return;
+  if(shopBoards.length === 0) {
+    list.innerHTML = '<span class="boards-list-label">Chưa có bảng nào</span>';
+    return;
+  }
+  list.innerHTML = '<span class="boards-list-label">Hiện bảng:</span>' + shopBoards.map(b => {
+    const checked = b.hidden ? '' : 'checked';
+    const active = b.hidden ? '' : 'active';
+    return `<label class="board-chip ${active}" title="Tick để hiện bảng này">
+      <input type="checkbox" ${checked} onchange="toggleBoardHidden('${b.id}')">
+      <span class="chip-name">📋 ${esc(b.name || 'Không tên')}</span>
+      <span class="chip-mini">(${(b.rows||[]).length})</span>
+    </label>`;
+  }).join('');
+}
+
+// Toggle mở/đóng khung danh sách bảng
+window.toggleBoardsList = () => {
+  const list = document.getElementById('boards-list');
+  if(!list) return;
+  list.style.display = list.style.display === 'none' ? 'flex' : 'none';
+};
+
+// ── Export / Import JSON ──
+// Xuất toàn bộ bảng + dòng ra file .json
+window.exportShopJSON = () => {
+  if(shopBoards.length === 0) {
+    alert('Chưa có bảng nào để xuất. Hãy tạo bảng và thêm dòng trước!');
+    return;
+  }
+  const data = {
+    app: 'project-feed-shop',
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    boards: shopBoards.map(b => ({
+      id: b.id,
+      name: b.name,
+      minimized: !!b.minimized,
+      hidden: !!b.hidden,
+      rows: (b.rows || []).map(r => ({
+        name: r.name || '',
+        qtyBuy: Number(r.qtyBuy) || 0,
+        qtyUse: Number(r.qtyUse) || 0,
+        qtyHave: Number(r.qtyHave) || 0,
+        estimated: Number(r.estimated) || 0,
+        actual: Number(r.actual) || 0,
+        link: r.link || '',
+        status: r.status || 'searching',
+        lastModified: r.lastModified || Date.now()
+      }))
+    }))
+  };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const ts = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const fname = `project-feed-shop_${ts.getFullYear()}${pad(ts.getMonth()+1)}${pad(ts.getDate())}_${pad(ts.getHours())}${pad(ts.getMinutes())}.json`;
+  a.href = url;
+  a.download = fname;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+// Nhập từ file JSON — hỏi user chọn chế độ Ghi đè / Gộp
+window.importShopJSON = (event) => {
+  const file = event.target.files && event.target.files[0];
+  if(!file) return;
+  // Reset input value để có thể chọn lại cùng file
+  event.target.value = '';
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    let data;
+    try {
+      data = JSON.parse(e.target.result);
+    } catch(err) {
+      alert('File JSON không hợp lệ: ' + err.message);
+      return;
+    }
+    // Hỗ trợ cả 2 định dạng: {boards: [...]} hoặc [board, board, ...] hoặc [row, row] (cũ)
+    let incoming = [];
+    if(Array.isArray(data)) {
+      // Nếu là array of rows (cũ) → gói thành 1 bảng "Nhập"
+      if(data.length && data[0].name !== undefined && data[0].estimated !== undefined && !data[0].rows) {
+        incoming = [{ id: genBoardId(), name: 'Bảng nhập (cũ)', minimized: false, hidden: false, rows: data.map(r => normalizeRow(r)) }];
+      } else {
+        // Array of boards
+        incoming = data.map(b => normalizeBoard(b));
+      }
+    } else if(data && Array.isArray(data.boards)) {
+      incoming = data.boards.map(b => normalizeBoard(b));
+    } else if(data && data.rows) {
+      // Single board object
+      incoming = [normalizeBoard(data)];
+    } else {
+      alert('Cấu trúc JSON không hợp lệ. Mong đợi: { boards: [...] } hoặc [ {rows:[...]}, ... ]');
+      return;
+    }
+    if(incoming.length === 0) {
+      alert('File không có bảng nào.');
+      return;
+    }
+
+    // Hỏi chế độ nhập
+    const mode = confirm(
+      `Tìm thấy ${incoming.length} bảng (${incoming.reduce((s,b)=>s+(b.rows||[]).length,0)} dòng tổng).\n\n` +
+      `• OK = GỘP (giữ bảng hiện có, thêm bảng mới vào cuối)\n` +
+      `• Cancel = GHI ĐÈ (xoá hết bảng cũ, thay bằng bảng trong file)`
+    );
+    if(mode) {
+      // Gộp
+      shopBoards = shopBoards.concat(incoming);
+    } else {
+      // Ghi đè
+      shopBoards = incoming;
+    }
+    saveBoards();
+    renderAllBoards();
+    alert(`Đã nhập ${incoming.length} bảng thành công!`);
+  };
+  reader.readAsText(file);
+};
+
+// Chuẩn hoá 1 board từ JSON (đảm bảo đủ field)
+function normalizeBoard(b) {
+  return {
+    id: b.id || genBoardId(),
+    name: b.name || 'Không tên',
+    minimized: !!b.minimized,
+    hidden: !!b.hidden,
+    rows: Array.isArray(b.rows) ? b.rows.map(r => normalizeRow(r)) : []
+  };
+}
+
+// Chuẩn hoá 1 row từ JSON
+function normalizeRow(r) {
+  return {
+    name: r.name || '',
+    qtyBuy: Number(r.qtyBuy) || 0,
+    qtyUse: Number(r.qtyUse) || 0,
+    qtyHave: Number(r.qtyHave) || 0,
+    estimated: Number(r.estimated) || 0,
+    actual: Number(r.actual) || 0,
+    link: r.link || '',
+    status: r.status || 'searching',
+    lastModified: r.lastModified || Date.now()
+  };
+}
+
+// Tạo bảng mới
+window.addShopBoard = (presetName) => {
+  const name = presetName || ('Bảng ' + (shopBoards.length + 1));
+  const board = { id: genBoardId(), name, minimized: false, hidden: false, rows: [] };
+  shopBoards.push(board);
+  saveBoards();
+  renderAllBoards();
+  // Focus vào ô tên bảng để user rename ngay
+  setTimeout(() => {
+    const titleEl = document.querySelector(`[data-board="${board.id}"] .board-title`);
+    if(titleEl) { titleEl.focus(); titleEl.select(); }
+  }, 50);
+  return board.id;
+};
+
+// Đổi tên bảng (input event)
+window.renameBoard = (id, val) => {
+  const b = getBoard(id);
+  if(!b) return;
+  b.name = val;
+  saveBoards();
+  // Cập nhật chip name + nút (không re-render toàn bộ để tránh mất focus)
+  const chip = document.querySelector(`.board-chip`);
+  // Không re-render chip list trong khi gõ → chỉ cập nhật khi blur
+};
+
+window.commitRenameBoard = (id, val) => {
+  const b = getBoard(id);
+  if(!b) return;
+  b.name = val.trim() || 'Không tên';
+  saveBoards();
+  renderAllBoards();
+};
+
+// Minimize/giãn bảng
+window.toggleMinimize = (id) => {
+  const b = getBoard(id);
+  if(!b) return;
+  b.minimized = !b.minimized;
+  saveBoards();
+  // Chỉ toggle class, không re-render toàn bộ để giữ hiệu ứng
+  const card = document.querySelector(`[data-board="${id}"]`);
+  if(card) card.classList.toggle('minimized', b.minimized);
+};
+
+// Ẩn/hiện bảng (từ chip checkbox)
+window.toggleBoardHidden = (id) => {
+  const b = getBoard(id);
+  if(!b) return;
+  b.hidden = !b.hidden;
+  saveBoards();
+  renderAllBoards();
+};
+
+// Xoá bảng
+window.deleteBoard = (id) => {
+  const b = getBoard(id);
+  if(!b) return;
+  const msg = `Xoá bảng "${b.name || 'Không tên'}"? Mất ${(b.rows||[]).length} dòng bên trong.`;
+  if(!confirm(msg)) return;
+  shopBoards = shopBoards.filter(x => x.id !== id);
+  saveBoards();
+  renderAllBoards();
+};
+
+// Thêm dòng vào 1 bảng
+window.addShopRow = (boardId) => {
+  const b = getBoard(boardId);
+  if(!b) return;
+  // Nếu đang minimize, mở rộng để user thấy dòng mới
+  const wasMinimized = b.minimized;
+  if(wasMinimized) b.minimized = false;
+  b.rows.push({ name:'', estimated:0, actual:0, link:'', status:'searching', lastModified: Date.now() });
+  saveBoards();
+  // Chỉ re-render bảng đó (không re-render tất cả) — tránh lỗi khi addRow gọi từ input event
+  renderAllBoards();
+  setTimeout(() => {
+    const card = document.querySelector(`[data-board="${boardId}"]`);
+    if(!card) return;
+    const rows = card.querySelectorAll('tbody tr');
+    const last = rows[rows.length - 1];
+    if(last) {
+      const inp = last.querySelector('input.shop-input');
+      if(inp) inp.focus();
+    }
+  }, 30);
+};
+
+// Thêm dòng vào bảng cuối cùng đang hiện (Enter ngoài input)
+window.addShopRowAndFocus = () => {
+  // Ưu tiên bảng đang hiện và không minimize cuối cùng
+  let target = null;
+  for(let i = shopBoards.length - 1; i >= 0; i--) {
+    if(!shopBoards[i].hidden) { target = shopBoards[i]; break; }
+  }
+  // Nếu chưa có bảng nào → tạo bảng mới
+  if(!target) { const id = window.addShopBoard(); target = getBoard(id); }
+  if(!target) return;
+  if(target.minimized) target.minimized = false;
+  target.rows.push({ name:'', estimated:0, actual:0, link:'', status:'searching', lastModified: Date.now() });
+  saveBoards();
+  renderAllBoards();
+  setTimeout(() => {
+    const card = document.querySelector(`[data-board="${target.id}"]`);
+    if(!card) return;
+    const rows = card.querySelectorAll('tbody tr');
+    const last = rows[rows.length - 1];
+    if(last) {
+      const inp = last.querySelector('input.shop-input');
+      if(inp) inp.focus();
+    }
+  }, 30);
+};
+
+// Cập nhật ô giá theo phần (thousands/last3) — KHÔNG re-render để giữ focus
+window.setPricePart = (boardId, i, field, part, val) => {
+  const b = getBoard(boardId);
+  if(!b) return;
+  const r = b.rows[i];
+  if(!r) return;
+  const current = Number(r[field]) || 0;
+  let thousands = Math.floor(current / 1000);
+  let last3 = current % 1000;
+
+  if(part === 'thousands') {
+    thousands = Math.max(0, Math.floor(Number(val) || 0));
+  } else if(part === 'last3') {
+    let n = Math.max(0, Math.min(999, Math.floor(Number(val) || 0)));
+    last3 = n;
+  }
+  r[field] = thousands * 1000 + last3;
+  r.lastModified = Date.now();
+  saveBoards();
+
+  updateRowDiff(boardId, i);
+  updateBoardTotals(boardId);
+  calcGrandTotals();
+  updateLastModifiedCell(boardId, i);
+
+  if(part === 'thousands') {
+    const card = document.querySelector(`[data-board="${boardId}"]`);
+    if(card) {
+      const row = card.querySelectorAll('tbody tr')[i];
+      if(row) {
+        const last3Input = row.querySelector(`.price-last3[data-field="${field}"]`) ||
+                           row.querySelectorAll('.price-last3')[field === 'estimated' ? 0 : 1];
+        if(last3Input) {
+          const shouldEnable = val !== '' && val !== null && val !== undefined;
+          last3Input.disabled = !shouldEnable;
+        }
+      }
+    }
+  }
+};
+
+window.updateRow = (boardId, i, field, val) => {
+  const b = getBoard(boardId);
+  if(!b) return;
+  const r = b.rows[i];
+  if(!r) return;
+  r[field] = val;
+  r.lastModified = Date.now();
+  saveBoards();
+  if(field === 'estimated' || field === 'actual') {
+    updateRowDiff(boardId, i);
+    updateBoardTotals(boardId);
+    calcGrandTotals();
+  }
+  updateLastModifiedCell(boardId, i);
+};
+
+// Cập nhật ô số lượng (qtyBuy / qtyUse / qtyHave)
+// qtyBuy & qtyUse: chỉ lưu; qtyHave: cập nhật cột "Cần mua" (ô chỉ đọc)
+window.updateQty = (boardId, i, field, val) => {
+  const b = getBoard(boardId);
+  if(!b) return;
+  const r = b.rows[i];
+  if(!r) return;
+  r[field] = Math.max(0, Math.floor(Number(val) || 0));
+  r.lastModified = Date.now();
+  saveBoards();
+
+  // Cập nhật ô "Cần mua" (ô chỉ đọc giữa qtyUse và qtyHave) → SL mua − SL dùng − SL có sẵn
+  const card = document.querySelector(`[data-board="${boardId}"]`);
+  if(card) {
+    const tr = card.querySelectorAll('tbody tr')[i];
+    if(tr) {
+      const needCell = tr.querySelector('td.qty-need-cell');
+      if(needCell) {
+        const qBuy = Number(r.qtyBuy) || 0;
+        const qUse = Number(r.qtyUse) || 0;
+        const qHave = Number(r.qtyHave) || 0;
+        const need = Math.max(0, qBuy - qUse - qHave);
+        needCell.textContent = need;
+        needCell.style.color = need > 0 ? 'var(--danger)' : 'var(--text-secondary)';
+        needCell.style.fontWeight = need > 0 ? '700' : '400';
+      }
+    }
+  }
+  // Cập nhật qty-summary ở header bảng
+  updateBoardQtySummary(boardId);
+  updateLastModifiedCell(boardId, i);
+};
+
+// Cập nhật badge "SL: ... Dùng: ... Có: ... Cần: ..." ở header bảng
+function updateBoardQtySummary(boardId) {
+  const b = getBoard(boardId);
+  if(!b) return;
+  let qBuy = 0, qUse = 0, qHave = 0;
+  (b.rows || []).forEach(r => {
+    qBuy += Number(r.qtyBuy) || 0;
+    qUse += Number(r.qtyUse) || 0;
+    qHave += Number(r.qtyHave) || 0;
+  });
+  const qNeed = Math.max(0, qBuy - qUse - qHave);
+  const card = document.querySelector(`[data-board="${boardId}"]`);
+  if(!card) return;
+  const sum = card.querySelector('.qty-summary');
+  if(sum) {
+    sum.innerHTML = `🛒 SL: <strong>${qBuy}</strong> · 📦 Dùng: <strong>${qUse}</strong> · 🏠 Có: <strong>${qHave}</strong>${qNeed > 0 ? ` · 🔥 Cần: <strong style="color:var(--danger)">${qNeed}</strong>` : ''}`;
+  }
+}
+
+// Cập nhật riêng cột "Sửa lần cuối" của 1 dòng
+function updateLastModifiedCell(boardId, i) {
+  const card = document.querySelector(`[data-board="${boardId}"]`);
+  if(!card) return;
+  const row = card.querySelectorAll('tbody tr')[i];
+  if(!row) return;
+  const cell = row.querySelector('.last-modified');
+  if(cell) cell.textContent = fmtLastMod(Date.now());
+}
+
+// Cập nhật ô ± của 1 dòng
+function updateRowDiff(boardId, i) {
+  const card = document.querySelector(`[data-board="${boardId}"]`);
+  if(!card) return;
+  const tr = card.querySelectorAll('tbody tr')[i];
   if(!tr) return;
-  const r = shopRows[i];
-  // Sau khi thêm cột drag handle: ô ± là td.diff-cell (không phụ thuộc index)
+  const b = getBoard(boardId);
+  const r = b.rows[i];
   const diffCell = tr.querySelector('.diff-cell');
   if(!diffCell) return;
   const diff = (r.estimated && r.actual)
@@ -1431,45 +2048,193 @@ function updateRowDiff(i) {
   }
 }
 
-window.deleteRow = (i) => {
-  shopRows.splice(i, 1);
-  saveShop();
-  renderShopTable();
+// Cập nhật thanh totals của 1 bảng
+function updateBoardTotals(boardId) {
+  const b = getBoard(boardId);
+  if(!b) return;
+  const t = boardTotals(b);
+  const card = document.querySelector(`[data-board="${boardId}"]`);
+  if(!card) return;
+  const estEl = card.querySelector('[data-totals="est"]');
+  const actEl = card.querySelector('[data-totals="act"]');
+  const diffEl = card.querySelector('[data-totals="diff"]');
+  if(estEl) estEl.textContent = fmtVND(t.est);
+  if(actEl) actEl.textContent = fmtVND(t.act);
+  if(diffEl) {
+    diffEl.textContent = (t.diff >= 0 ? '+' : '') + fmtVND(t.diff);
+    diffEl.className = t.diff > 0 ? 'diff-neg' : t.diff < 0 ? 'diff-pos' : '';
+  }
+}
+
+// Xoá 1 dòng
+window.deleteRow = (boardId, i) => {
+  const b = getBoard(boardId);
+  if(!b) return;
+  b.rows.splice(i, 1);
+  saveBoards();
+  renderAllBoards();
 };
 
-// ── Drag & Drop: di chuyển dòng sản phẩm ──
+// Render 1 card bảng (header + toolbar + table)
+function renderBoardCard(b) {
+  const t = boardTotals(b);
+  const cls = t.diff > 0 ? 'diff-neg' : t.diff < 0 ? 'diff-pos' : '';
+  const minCls = b.minimized ? 'minimized' : '';
+  const hiddenStyle = b.hidden ? 'style="display:none"' : '';
+  const rowCount = (b.rows || []).length;
+
+  // Tổng số lượng: mua / dùng / có sẵn
+  let qBuy = 0, qUse = 0, qHave = 0;
+  (b.rows || []).forEach(r => {
+    qBuy += Number(r.qtyBuy) || 0;
+    qUse += Number(r.qtyUse) || 0;
+    qHave += Number(r.qtyHave) || 0;
+  });
+  // Tính: mua - sử dụng - có sẵn = cần mua thêm
+  const qNeed = Math.max(0, qBuy - qUse - qHave);
+
+  const rowsHtml = (b.rows || []).length === 0
+    ? `<tr><td colspan="12" style="text-align:center;padding:2rem;color:var(--text-secondary)">Chưa có dòng nào. Bấm "+ Thêm dòng" hoặc Enter ở khoảng trống!</td></tr>`
+    : (b.rows || []).map((r, i) => renderRow(b.id, r, i)).join('');
+
+  return `<div class="board-card ${minCls}" data-board="${b.id}" ${hiddenStyle}>
+    <div class="board-header">
+      <span class="board-collapse-handle" onclick="toggleMinimize('${b.id}')" title="${b.minimized ? 'Mở rộng' : 'Thu gọn'}">${b.minimized ? '▶' : '▼'}</span>
+      <div class="board-title-wrap">
+        <input class="board-title" value="${esc(b.name||'')}" placeholder="Tên bảng..."
+               oninput="renameBoard('${b.id}',this.value)"
+               onblur="commitRenameBoard('${b.id}',this.value)"
+               onkeydown="if(event.key==='Enter') this.blur()"
+               maxlength="60">
+        <span class="board-rows-count" title="Số dòng">${rowCount} dòng</span>
+      </div>
+      <div class="board-totals" title="Tổng tiền riêng của bảng này">
+        <span>Dự kiến: <strong data-totals="est">${fmtVND(t.est)}</strong></span>
+        <span>Thực tế: <strong data-totals="act">${fmtVND(t.act)}</strong></span>
+        <span>± <strong data-totals="diff" class="${cls}">${(t.diff >= 0 ? '+' : '') + fmtVND(t.diff)}</strong></span>
+      </div>
+      <span class="qty-summary" title="Tổng số lượng: Mua / Sử dụng / Có sẵn / Cần mua thêm">
+        🛒 SL: <strong>${qBuy}</strong> · 📦 Dùng: <strong>${qUse}</strong> · 🏠 Có: <strong>${qHave}</strong>${qNeed > 0 ? ` · 🔥 Cần: <strong style="color:var(--danger)">${qNeed}</strong>` : ''}
+      </span>
+      <div class="board-actions">
+        <button class="board-btn btn-primary" onclick="addShopRow('${b.id}')" title="Thêm dòng vào bảng này">+ Dòng</button>
+        <button class="board-btn btn-danger" onclick="deleteBoard('${b.id}')" title="Xoá bảng">🗑 Bảng</button>
+      </div>
+    </div>
+    <div class="board-toolbar">
+      <span style="font-size:12px;color:var(--text-secondary)">Kéo ô ⠿ để di chuyển dòng · Enter trong ô để thoát · Enter ngoài ô để thêm dòng mới</span>
+    </div>
+    <div class="board-table-wrap" style="overflow-x:auto">
+      <table class="shop">
+        <thead>
+          <tr>
+            <th style="width:34px"></th>
+            <th style="width:14%">Sản phẩm</th>
+            <th style="width:5%" title="Số lượng cần mua">SL mua</th>
+            <th style="width:5%" title="Số lượng đã sử dụng">SL sử dụng</th>
+            <th style="width:5%" title="SL mua − SL dùng − SL có sẵn = Cần mua thêm">🔥 Cần mua</th>
+            <th style="width:5%" title="Số lượng có sẵn trong kho">Có sẵn</th>
+            <th style="width:11%">Giá dự kiến</th>
+            <th style="width:11%">Giá thực</th>
+            <th style="width:6%">±</th>
+            <th style="width:11%">Link</th>
+            <th style="width:11%">Trạng thái</th>
+            <th style="width:8%">Sửa lần cuối</th>
+            <th style="width:4%"></th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+// Render 1 dòng (table row) thuộc board
+function renderRow(boardId, r, i) {
+  const est = Number(r.estimated) || 0;
+  const act = Number(r.actual) || 0;
+  const estK = Math.floor(est / 1000);
+  const estL = est % 1000;
+  const actK = Math.floor(act / 1000);
+  const actL = act % 1000;
+  const estL3Str = String(estL).padStart(3, '0');
+  const actL3Str = String(actL).padStart(3, '0');
+  const estLocked = (r.estimated === '' || r.estimated === null || r.estimated === undefined) ? 'disabled' : '';
+  const actLocked = (r.actual    === '' || r.actual    === null || r.actual    === undefined) ? 'disabled' : '';
+  const qtyBuy = Number(r.qtyBuy) || 0;
+  const qtyUse = Number(r.qtyUse) || 0;
+  const qtyHave = Number(r.qtyHave) || 0;
+  // Tô màu nền nhẹ cho ô "Cần mua" nếu SL mua > sử dụng + có sẵn
+  const qNeed = Math.max(0, qtyBuy - qtyUse - qtyHave);
+  const qtyNeedStyle = qNeed > 0 ? 'color:var(--danger);font-weight:700;' : 'color:var(--text-secondary);';
+
+  const diff = (r.estimated && r.actual) ? act - est : null;
+  const diffHtml = diff !== null
+    ? `<span class="price-diff ${diff > 0 ? 'diff-neg' : diff < 0 ? 'diff-pos' : ''}">${diff >= 0 ? '+' : ''}${fmtVND(diff)}</span>`
+    : '—';
+  const statusOpts = STATUS_OPTS.map(o =>
+    `<option value="${o.val}" ${r.status === o.val ? 'selected' : ''}>${o.label}</option>`
+  ).join('');
+  const statusCls = STATUS_OPTS.find(o => o.val === r.status)?.cls || '';
+  const lastMod = r.lastModified ? fmtLastMod(r.lastModified) : '—';
+
+  const entBlur = ` onkeydown="if(event.key==='Enter') this.blur()"`;
+  const trDragOverDrop = ` ondragover="onRowDragOver(event,'${boardId}',${i})" ondragleave="onRowDragLeave(event)" ondrop="onRowDrop(event,'${boardId}',${i})"`;
+  return `<tr data-i="${i}"${trDragOverDrop}>
+    <td class="drag-handle" draggable="true" ondragstart="onRowDragStart(event,'${boardId}',${i})" ondragend="onRowDragEnd(event)" title="Kéo để di chuyển dòng">⠿</td>
+    <td><input class="shop-input" placeholder="Tên sản phẩm..." value="${esc(r.name||'')}" oninput="updateRow('${boardId}',${i},'name',this.value)"${entBlur}></td>
+    <td class="qty-cell"><input type="number" min="0" inputmode="numeric" class="qty-input" placeholder="0" value="${qtyBuy || ''}" oninput="updateQty('${boardId}',${i},'qtyBuy',this.value)" title="Số lượng cần mua"${entBlur}></td>
+    <td class="qty-cell"><input type="number" min="0" inputmode="numeric" class="qty-input" placeholder="0" value="${qtyUse || ''}" oninput="updateQty('${boardId}',${i},'qtyUse',this.value)" title="Số lượng đã sử dụng"${entBlur}></td>
+    <td class="qty-cell qty-need-cell" style="${qtyNeedStyle}padding:6px 8px;font-size:14px;font-variant-numeric:tabular-nums;" title="SL mua − SL dùng − SL có sẵn = Cần mua thêm">${qNeed}</td>
+    <td><input type="number" class="shop-input qty-have-input" min="0" inputmode="numeric" placeholder="0" value="${qtyHave || ''}" title="Số lượng có sẵn trong kho" oninput="updateQty('${boardId}',${i},'qtyHave',this.value)"${entBlur} style="text-align:center;max-width:70px;"></td>
+    <td><div class="price-split">
+      <input type="number" class="shop-input price-thousands" placeholder="0" value="${estK || ''}" oninput="setPricePart('${boardId}',${i},'estimated','thousands',this.value)"${entBlur}>
+      <span class="price-sep">.</span>
+      <input type="text" inputmode="numeric" maxlength="3" data-field="estimated" class="shop-input price-last3" placeholder="000" value="${estL3Str}" ${estLocked} oninput="setPricePart('${boardId}',${i},'estimated','last3',this.value)" onfocus="this.select()" onblur="this.value=String(Number(this.value)||0).padStart(3,'0')"${entBlur}>
+    </div></td>
+    <td><div class="price-split">
+      <input type="number" class="shop-input price-thousands" placeholder="0" value="${actK || ''}" oninput="setPricePart('${boardId}',${i},'actual','thousands',this.value)"${entBlur}>
+      <span class="price-sep">.</span>
+      <input type="text" inputmode="numeric" maxlength="3" data-field="actual" class="shop-input price-last3" placeholder="000" value="${actL3Str}" ${actLocked} oninput="setPricePart('${boardId}',${i},'actual','last3',this.value)" onfocus="this.select()" onblur="this.value=String(Number(this.value)||0).padStart(3,'0')"${entBlur}>
+    </div></td>
+    <td class="diff-cell">${diffHtml}</td>
+    <td><input class="shop-input" placeholder="https://..." value="${esc(r.link||'')}" oninput="updateRow('${boardId}',${i},'link',this.value)"${entBlur}>${r.link ? `<a href="${esc(r.link)}" target="_blank" class="shop-link">Mở ↗</a>` : ''}</td>
+    <td><select class="status-select ${statusCls}" onchange="updateRow('${boardId}',${i},'status',this.value)"${entBlur}>${statusOpts}</select></td>
+    <td class="last-modified" data-i="${i}">${lastMod}</td>
+    <td><button class="del-row-btn" onclick="deleteRow('${boardId}',${i})" title="Xóa">🗑</button></td>
+  </tr>`;
+}
+
+// ── Drag & Drop: di chuyển dòng (cả trong và ngoài cùng bảng) ──
+let dragSrcBoardId = null;
 let dragSrcIndex = -1;
 
-// Bắt đầu kéo — ô drag handle là phần tử draggable (input/select không bị dính)
-window.onRowDragStart = (e, i) => {
-  // Nếu user somehow bắt đầu drag từ form control → huỷ (an toàn)
+window.onRowDragStart = (e, boardId, i) => {
   const tag = (e.target.tagName || '').toLowerCase();
   if(tag === 'input' || tag === 'textarea' || tag === 'select' || tag === 'option') {
     e.preventDefault();
     return;
   }
+  dragSrcBoardId = boardId;
   dragSrcIndex = i;
   e.dataTransfer.effectAllowed = 'move';
-  // Firefox cần setData mới cho phép drag
-  try { e.dataTransfer.setData('text/plain', String(i)); } catch(_) {}
-  // Đánh dấu dòng đang được kéo (currentTarget là ô drag-handle, parentElement là <tr>)
+  try { e.dataTransfer.setData('text/plain', boardId + ':' + i); } catch(_) {}
   const tr = e.currentTarget.closest('tr');
   if(tr) tr.classList.add('dragging-row');
 };
 
-// Kết thúc kéo (bình thường hay huỷ) → dọn dẹp class
 window.onRowDragEnd = (e) => {
   const tr = e.currentTarget.closest('tr');
   if(tr) tr.classList.remove('dragging-row');
   document.querySelectorAll('table.shop tr').forEach(tr => {
     tr.classList.remove('drag-over-top', 'drag-over-bottom');
   });
+  dragSrcBoardId = null;
   dragSrcIndex = -1;
 };
 
-// Dragover trên mỗi dòng → tính xem chuột ở nửa trên hay nửa dưới để chỉ thị vị trí chèn
-window.onRowDragOver = (e, i) => {
-  if(dragSrcIndex < 0) return;
+window.onRowDragOver = (e, boardId, i) => {
+  if(dragSrcIndex < 0 || !dragSrcBoardId) return;
   e.preventDefault();
   e.dataTransfer.dropEffect = 'move';
   const tr = e.currentTarget;
@@ -1483,11 +2248,19 @@ window.onRowDragLeave = (e) => {
   e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom');
 };
 
-// Thả chuột → di chuyển dòng
-window.onRowDrop = (e, i) => {
+window.onRowDrop = (e, boardId, i) => {
   e.preventDefault();
   e.stopPropagation();
-  if(dragSrcIndex < 0 || dragSrcIndex === i) {
+  if(dragSrcIndex < 0 || !dragSrcBoardId) {
+    document.querySelectorAll('table.shop tr').forEach(tr => tr.classList.remove('drag-over-top','drag-over-bottom'));
+    return;
+  }
+  // Chỉ hỗ trợ kéo trong cùng bảng (giữ đơn giản; nếu user kéo chéo bảng, không cho phép)
+  if(dragSrcBoardId !== boardId) {
+    document.querySelectorAll('table.shop tr').forEach(tr => tr.classList.remove('drag-over-top','drag-over-bottom'));
+    return;
+  }
+  if(dragSrcIndex === i) {
     document.querySelectorAll('table.shop tr').forEach(tr => tr.classList.remove('drag-over-top','drag-over-bottom'));
     return;
   }
@@ -1495,47 +2268,26 @@ window.onRowDrop = (e, i) => {
   const rect = tr.getBoundingClientRect();
   const isTop = (e.clientY - rect.top) < rect.height / 2;
   let targetIndex = isTop ? i : i + 1;
-  // Di chuyển phần tử
-  const moved = shopRows.splice(dragSrcIndex, 1)[0];
-  // Nếu kéo từ trên xuống dưới, sau splice index đã giảm 1
+  const b = getBoard(boardId);
+  if(!b) return;
+  const moved = b.rows.splice(dragSrcIndex, 1)[0];
   if(dragSrcIndex < targetIndex) targetIndex--;
-  shopRows.splice(targetIndex, 0, moved);
-  saveShop();
-  renderShopTable();
+  b.rows.splice(targetIndex, 0, moved);
+  saveBoards();
+  renderAllBoards();
 };
 
 // ── Enter ở ngoài ô nhập (trong pane-shop) → thêm dòng mới ──
 document.addEventListener('keydown', (e) => {
   if(e.key !== 'Enter') return;
-  // Chỉ xử lý khi Tab Mua sắm đang hiển thị
   const pane = document.getElementById('pane-shop');
   if(!pane || pane.style.display === 'none') return;
-  // Nếu đang focus vào một ô nhập liệu thì bỏ qua (đã có entBlur tự blur)
   const t = (e.target.tagName || '').toLowerCase();
   if(t === 'input' || t === 'textarea' || t === 'select' || t === 'option') return;
-  // Không bấm ở trong nút "+ Thêm dòng" hay nút xoá (vẫn enter được khi focus)
   if(e.target.closest('button')) return;
-  // Ngăn scroll trang khi bấm Enter ở body
   e.preventDefault();
-  // Thêm dòng mới và focus vào ô tên sản phẩm của dòng đó
   addShopRowAndFocus();
 });
-
-// Thêm dòng mới rồi tự focus vào ô "Tên sản phẩm"
-window.addShopRowAndFocus = () => {
-  shopRows.push({ name:'', estimated:0, actual:0, link:'', status:'searching', lastModified: Date.now() });
-  saveShop();
-  renderShopTable();
-  // Focus vào ô tên của dòng vừa thêm (dòng cuối)
-  setTimeout(() => {
-    const rows = document.querySelectorAll('#shop-tbody tr');
-    const lastRow = rows[rows.length - 1];
-    if(lastRow) {
-      const nameInput = lastRow.querySelector('input.shop-input');
-      if(nameInput) nameInput.focus();
-    }
-  }, 30);
-};
 
 // ── Lightbox: xem ảnh phóng to ──
 // Trạng thái: zoom, vị trí translate, đang kéo hay không
@@ -1682,7 +2434,7 @@ initTheme();
 checkNameOnLoad();
 setupAvatarInput();
 window.updateUserChip();
-renderShopTable();
+renderAllBoards();
 
 const savedConfig = localStorage.getItem('fbConfig');
 if(savedConfig){ 
