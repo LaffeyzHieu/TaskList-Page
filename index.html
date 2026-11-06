@@ -780,6 +780,211 @@
     line-height: 1.5;
   }
 
+  /* ── Đính kèm bảng trong Feed post ── */
+  /* Thumbnail trong post */
+  .board-thumb {
+    margin: 12px 16px 0;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .board-thumb:hover {
+    border-color: var(--primary);
+    background: var(--card-bg);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+  }
+  .board-thumb-icon {
+    width: 44px; height: 44px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .board-thumb-info { flex: 1; min-width: 0; }
+  .board-thumb-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 2px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .board-thumb-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .board-thumb-arrow {
+    color: var(--text-secondary);
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .board-thumb:hover .board-thumb-arrow { color: var(--primary); }
+
+  /* Chip nhỏ hiển thị trong form đăng bài khi đã chọn bảng */
+  .attach-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 99px;
+    background: rgba(24, 119, 242, 0.1);
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--primary);
+  }
+  [data-theme="dark"] .attach-chip { background: rgba(45, 136, 255, 0.15); }
+  .attach-chip-x {
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 0 0 0 4px;
+    opacity: 0.7;
+  }
+  .attach-chip-x:hover { opacity: 1; color: var(--danger); }
+
+  /* Modal chọn bảng để đính kèm */
+  .board-picker-list {
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 4px;
+    margin: 1rem 0;
+  }
+  .board-picker-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .board-picker-item:hover { border-color: var(--primary); background: var(--input-bg); }
+  .board-picker-item.selected { border-color: var(--primary); background: rgba(24,119,242,0.08); }
+  [data-theme="dark"] .board-picker-item.selected { background: rgba(45,136,255,0.12); }
+  .board-picker-icon {
+    width: 36px; height: 36px;
+    background: var(--input-bg);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .board-picker-info { flex: 1; min-width: 0; text-align: left; }
+  .board-picker-name { font-size: 14px; font-weight: 600; color: var(--text-color); }
+  .board-picker-meta { font-size: 12px; color: var(--text-secondary); }
+
+  /* Lightbox bảng share (read-only) */
+  .board-share-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.92);
+    display: none;
+    justify-content: center;
+    align-items: flex-start;
+    z-index: 9999;
+    overflow-y: auto;
+    padding: 24px 16px;
+  }
+  .board-share-overlay.active { display: flex; }
+  .board-share-card {
+    background: var(--card-bg);
+    border-radius: 14px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    width: 100%;
+    max-width: 1200px;
+    margin: auto;
+    overflow: hidden;
+  }
+  .board-share-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    background: var(--input-bg);
+    border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+  }
+  .board-share-title { font-size: 18px; font-weight: 700; color: var(--text-color); flex: 1; min-width: 0; }
+  .board-share-author { font-size: 12px; color: var(--text-secondary); }
+  .board-share-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .board-share-close {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(255,255,255,0.5);
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: 0.2s;
+  }
+  .board-share-close:hover { background: rgba(255,80,80,0.35); transform: rotate(90deg); }
+  /* Override .board-share-close trong light theme */
+  [data-theme="light"] .board-share-close {
+    background: var(--input-bg);
+    border-color: var(--border-color);
+    color: var(--text-color);
+  }
+  [data-theme="light"] .board-share-close:hover {
+    background: rgba(228,30,63,0.1);
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+  .board-share-toolbar {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .board-share-toolbar strong { color: var(--text-color); }
+  .board-share-totals { display: flex; gap: 16px; flex: 1; flex-wrap: wrap; }
+  .board-share-table-wrap { overflow-x: auto; max-height: 60vh; overflow-y: auto; }
+  /* Read-only table — không có input, không drag handle */
+  table.shop-share {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    min-width: 1100px;
+  }
+  table.shop-share th {
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--input-bg);
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  table.shop-share td {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+    color: var(--text-color);
+  }
+  table.shop-share tr:hover td { background: var(--input-bg); }
+  table.shop-share td.qty-cell { background: rgba(24, 119, 242, 0.04); text-align: center; }
+  [data-theme="dark"] table.shop-share td.qty-cell { background: rgba(45, 136, 255, 0.06); }
+  table.shop-share td.need-cell { color: var(--danger); font-weight: 700; }
+  table.shop-share td.need-cell.zero { color: var(--text-secondary); font-weight: 400; }
+
   /* ── Lightbox: xem ảnh phóng to ── */
   .lightbox-overlay {
     position: fixed;
@@ -895,6 +1100,26 @@
   <div class="lightbox-hint">Cuộn chuột để zoom · Kéo để di chuyển · ESC hoặc ✕ để đóng</div>
 </div>
 
+<!-- Board Picker modal — chọn 1 bảng để đính kèm vào post -->
+<div class="modal-overlay" id="board-picker-modal" style="display:none">
+  <div class="modal-content" style="max-width:480px;text-align:left;">
+    <h2 style="text-align:center;">📋 Đính kèm bảng chi phí</h2>
+    <p style="text-align:center;">Chọn 1 bảng để đính kèm vào bài viết. Người xem có thể bấm để xem và sao chép về máy họ.</p>
+    <div class="board-picker-list" id="board-picker-list"></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeBoardPicker()">Huỷ</button>
+      <button class="btn" style="flex:1;" onclick="confirmBoardAttach()" id="board-picker-confirm" disabled>Đính kèm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Board Share Lightbox — xem bảng đã được share (read-only) -->
+<div class="board-share-overlay" id="board-share-overlay">
+  <div class="board-share-card" id="board-share-card">
+    <!-- Nội dung sẽ được render bằng JS -->
+  </div>
+</div>
+
 <header>
   <div class="header-wrap">
     <h1>Project Feed 🐢</h1>
@@ -930,10 +1155,12 @@
         <img id="preview" class="preview">
         <div class="row">
           <button class="btn btn-ghost" type="button" onclick="document.getElementById('image').click()">📷 Ảnh</button>
+          <button class="btn btn-ghost" type="button" onclick="openBoardPicker()">📋 Bảng</button>
           <span style="color:var(--text-secondary); font-size:13px;" id="file-name">Chưa có ảnh</span>
           <button class="btn" style="margin-left:auto;" onclick="postNow()" id="post-btn">Đăng bài</button>
         </div>
         <input type="file" id="image" class="file-input" accept="image/*">
+        <div id="attach-preview" style="margin-top:8px;"></div>
         <div class="locked-msg" id="post-locked">🔒 Vui lòng đặt tên để đăng bài.</div>
       </div>
       <div class="error" id="error-box"></div>
@@ -1201,18 +1428,39 @@ window.postNow = async () => {
   if(!currentUserName) { showErr('Vui lòng đặt tên trước khi đăng bài!'); return; }
   const caption = document.getElementById('caption').value.trim();
   const imgEl = document.getElementById('image');
-  if(!caption&&!imgEl.files[0]){ showErr('Viết gì đó hoặc chọn ảnh đi!'); return; }
+  // Lấy bảng đã đính kèm (nếu có)
+  const attachedBoard = window._attachedBoard || null;
+  if(!caption && !imgEl.files[0] && !attachedBoard){ showErr('Viết gì đó, chọn ảnh hoặc đính kèm bảng đi!'); return; }
   
   const btn = document.getElementById('post-btn');
   btn.disabled=true;btn.textContent='Đang đăng...';
   let imageBase64=null;
   if(imgEl.files[0]) imageBase64 = await resizeEncode(imgEl.files[0]);
   
+  // Snapshot bảng: tên + rows (loại bỏ id, hidden, minimized để gọn)
+  let shopData = null;
+  if(attachedBoard) {
+    shopData = {
+      boardName: attachedBoard.name || 'Không tên',
+      rows: (attachedBoard.rows || []).map(r => ({
+        name: r.name || '',
+        qtyBuy: Number(r.qtyBuy) || 0,
+        qtyUse: Number(r.qtyUse) || 0,
+        qtyHave: Number(r.qtyHave) || 0,
+        estimated: Number(r.estimated) || 0,
+        actual: Number(r.actual) || 0,
+        link: r.link || '',
+        status: r.status || 'searching'
+      }))
+    };
+  }
+  
   try{
     await addDoc(collection(db,'posts'),{
       author: currentUserName,
       authorAvatar: currentUserAvatar || null,
       caption, imageBase64,
+      shopData: shopData || null,
       timestamp: Date.now(),
       comments: [],
       likes: [],
@@ -1222,6 +1470,9 @@ window.postNow = async () => {
     document.getElementById('preview').style.display='none';
     document.getElementById('file-name').textContent='Chưa có ảnh';
     imgEl.value='';
+    // Reset bảng đính kèm
+    window._attachedBoard = null;
+    renderAttachPreview();
   } catch(e){ showErr('Đăng lỗi: '+e.message); }
   btn.disabled=false;btn.textContent='Đăng bài';
 };
@@ -1250,6 +1501,34 @@ function renderPost(id, post){
   const liked = likes.includes(currentUserName);
   const disliked = dislikes.includes(currentUserName);
 
+  // Thumbnail bảng đính kèm (nếu có shopData)
+  let shopThumbHtml = '';
+  if(post.shopData && post.shopData.rows) {
+    const sd = post.shopData;
+    const rows = sd.rows || [];
+    let est = 0, act = 0, qBuy = 0, qUse = 0, qHave = 0;
+    rows.forEach(r => {
+      est += Number(r.estimated) || 0;
+      act += Number(r.actual) || 0;
+      qBuy += Number(r.qtyBuy) || 0;
+      qUse += Number(r.qtyUse) || 0;
+      qHave += Number(r.qtyHave) || 0;
+    });
+    const qNeed = Math.max(0, qBuy - qUse - qHave);
+    const meta = `${rows.length} dòng · Dự kiến ${fmtVND(est)} · Thực tế ${fmtVND(act)}` +
+                 (qNeed > 0 ? ` · 🔥 Cần mua ${qNeed}` : '');
+    // Encode dữ liệu vào data attribute để handler lấy lại khi bấm
+    const encoded = encodeURIComponent(JSON.stringify(sd));
+    shopThumbHtml = `<div class="board-thumb" onclick="openBoardShare('${id}')" data-shop="${encoded}" title="Bấm để xem bảng đầy đủ">
+      <div class="board-thumb-icon">📋</div>
+      <div class="board-thumb-info">
+        <div class="board-thumb-name">${esc(sd.boardName || 'Bảng không tên')}</div>
+        <div class="board-thumb-meta">${meta}</div>
+      </div>
+      <div class="board-thumb-arrow">↗</div>
+    </div>`;
+  }
+
   return `<div class="post-card" data-id="${id}">
     <div class="post-header">
       <div class="avatar">${post.authorAvatar
@@ -1262,6 +1541,7 @@ function renderPost(id, post){
     </div>
     ${post.caption?`<div class="caption">${esc(post.caption)}</div>`:''}
     ${post.imageBase64?`<img src="${post.imageBase64}" class="post-img" alt="" onclick="openLightbox(this.src)" title="Bấm để phóng to">`:''}
+    ${shopThumbHtml}
     
     <div class="actions">
       <button class="action-btn ${liked?'active-like':''}" onclick="toggleReact('${id}', 'like')" ${!currentUserName?'disabled':''}>
@@ -1503,7 +1783,6 @@ window.switchTab = (tab) => {
 // ── Shopping Table ──
 const STATUS_OPTS = [
   { val: 'inventory',  label: '✅ Inventory Already', cls: 's-inventory' },
-  { val: 'purchased',      label: '📦 Purchased',            cls: 's-inventory'},
   { val: 'shipping',   label: '🚚 Shipping',           cls: 's-shipping'  },
   { val: 'shopee',     label: '🛍 Shopee Searching',   cls: 's-shopee'    },
   { val: 'searching',  label: '🔍 Inventory Search\'ing', cls: 's-searching'},
@@ -1908,6 +2187,233 @@ window.addShopRowAndFocus = () => {
       if(inp) inp.focus();
     }
   }, 30);
+};
+
+// ── Đính kèm bảng vào Feed post ──
+// State: window._attachedBoard = null | { name, rows[] }
+
+// Mở modal chọn bảng để đính kèm
+window.openBoardPicker = () => {
+  if(!currentUserName) { showErr('Vui lòng đặt tên trước khi đăng bài!'); return; }
+  if(shopBoards.length === 0) {
+    alert('Bạn chưa có bảng nào. Hãy sang Tab Mua sắm và tạo bảng trước!');
+    return;
+  }
+  const list = document.getElementById('board-picker-list');
+  list.innerHTML = shopBoards.map(b => {
+    const rows = b.rows || [];
+    let est = 0;
+    rows.forEach(r => est += Number(r.estimated) || 0);
+    return `<div class="board-picker-item" onclick="selectBoardForAttach('${b.id}')" data-bid="${b.id}">
+      <div class="board-picker-icon">📋</div>
+      <div class="board-picker-info">
+        <div class="board-picker-name">${esc(b.name || 'Không tên')}</div>
+        <div class="board-picker-meta">${rows.length} dòng · Dự kiến ${fmtVND(est)}</div>
+      </div>
+    </div>`;
+  }).join('');
+  // Reset selected
+  window._pickerSelectedId = null;
+  document.getElementById('board-picker-confirm').disabled = true;
+  document.getElementById('board-picker-modal').style.display = 'flex';
+};
+
+// Chọn 1 bảng trong danh sách
+window.selectBoardForAttach = (bid) => {
+  document.querySelectorAll('.board-picker-item').forEach(el => el.classList.remove('selected'));
+  const item = document.querySelector(`.board-picker-item[data-bid="${bid}"]`);
+  if(item) item.classList.add('selected');
+  window._pickerSelectedId = bid;
+  document.getElementById('board-picker-confirm').disabled = false;
+};
+
+// Đóng modal picker
+window.closeBoardPicker = () => {
+  document.getElementById('board-picker-modal').style.display = 'none';
+  window._pickerSelectedId = null;
+};
+
+// Xác nhận đính kèm
+window.confirmBoardAttach = () => {
+  const bid = window._pickerSelectedId;
+  if(!bid) return;
+  const b = getBoard(bid);
+  if(!b) return;
+  // Snapshot bảng (chỉ tên + rows, không cần id/hidden/minimized)
+  window._attachedBoard = {
+    name: b.name,
+    rows: (b.rows || []).map(r => ({ ...r }))
+  };
+  window.closeBoardPicker();
+  renderAttachPreview();
+};
+
+// Huỷ đính kèm
+window.removeBoardAttach = () => {
+  window._attachedBoard = null;
+  renderAttachPreview();
+};
+
+// Hiển thị chip xem trước bảng đã đính kèm trong form
+function renderAttachPreview() {
+  const el = document.getElementById('attach-preview');
+  if(!el) return;
+  if(!window._attachedBoard) { el.innerHTML = ''; return; }
+  const b = window._attachedBoard;
+  el.innerHTML = `<div class="attach-chip">
+    📋 ${esc(b.name || 'Không tên')} (${(b.rows||[]).length} dòng)
+    <span class="attach-chip-x" onclick="removeBoardAttach()" title="Huỷ đính kèm">✕</span>
+  </div>`;
+}
+
+// ── Board Share Lightbox (read-only) ──
+
+// Mở lightbox bảng share từ post (tìm thumbnail có data-shop trong post đó)
+window.openBoardShare = (postId) => {
+  const postCard = document.querySelector(`.post-card[data-id="${postId}"]`);
+  if(!postCard) return;
+  const thumb = postCard.querySelector('.board-thumb');
+  if(!thumb) return;
+  let sd;
+  try {
+    sd = JSON.parse(decodeURIComponent(thumb.getAttribute('data-shop')));
+  } catch(e) {
+    alert('Không đọc được dữ liệu bảng!');
+    return;
+  }
+  // Lấy author + timestamp từ post
+  const author = postCard.querySelector('.author')?.textContent || '';
+  const ptime = postCard.querySelector('.ptime')?.textContent || '';
+  renderBoardShareLightbox(sd, author, ptime);
+};
+
+function renderBoardShareLightbox(sd, author, ptime) {
+  const overlay = document.getElementById('board-share-overlay');
+  const card = document.getElementById('board-share-card');
+  const rows = sd.rows || [];
+  let est = 0, act = 0, qBuy = 0, qUse = 0, qHave = 0;
+  rows.forEach(r => {
+    est += Number(r.estimated) || 0;
+    act += Number(r.actual) || 0;
+    qBuy += Number(r.qtyBuy) || 0;
+    qUse += Number(r.qtyUse) || 0;
+    qHave += Number(r.qtyHave) || 0;
+  });
+  const qNeed = Math.max(0, qBuy - qUse - qHave);
+
+  const rowsHtml = rows.length === 0
+    ? `<tr><td colspan="11" style="text-align:center;padding:2rem;color:var(--text-secondary)">Bảng trống</td></tr>`
+    : rows.map(r => {
+      const e = Number(r.estimated) || 0;
+      const a = Number(r.actual) || 0;
+      const diff = (r.estimated && r.actual) ? a - e : null;
+      const diffHtml = diff !== null
+        ? `<span class="price-diff ${diff > 0 ? 'diff-neg' : diff < 0 ? 'diff-pos' : ''}">${diff >= 0 ? '+' : ''}${fmtVND(diff)}</span>`
+        : '—';
+      const status = STATUS_OPTS.find(o => o.val === r.status);
+      const statusHtml = status ? `<span class="${status.cls}">${status.label}</span>` : '—';
+      const qb = Number(r.qtyBuy) || 0;
+      const qu = Number(r.qtyUse) || 0;
+      const qh = Number(r.qtyHave) || 0;
+      const qn = Math.max(0, qb - qu - qh);
+      const link = r.link ? `<a href="${esc(r.link)}" target="_blank" class="shop-link">Mở ↗</a>` : '—';
+      return `<tr>
+        <td>${esc(r.name || '—')}</td>
+        <td class="qty-cell">${qb || '—'}</td>
+        <td class="qty-cell">${qu || '—'}</td>
+        <td class="qty-cell need-cell ${qn === 0 ? 'zero' : ''}">${qn || 0}</td>
+        <td class="qty-cell">${qh || '—'}</td>
+        <td>${fmtVND(e)}</td>
+        <td>${fmtVND(a)}</td>
+        <td>${diffHtml}</td>
+        <td>${link}</td>
+        <td>${statusHtml}</td>
+        <td></td>
+      </tr>`;
+    }).join('');
+
+  card.innerHTML = `
+    <div class="board-share-header">
+      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+        <div style="font-size:24px;">📋</div>
+        <div style="min-width:0;">
+          <div class="board-share-title">${esc(sd.boardName || 'Bảng không tên')}</div>
+          <div class="board-share-author">Đăng bởi ${esc(author)} · ${esc(ptime)}</div>
+        </div>
+      </div>
+      <div class="board-share-actions">
+        <button class="btn" onclick="copyBoardToMyBoards()">📋 Sao chép vào bảng của tôi</button>
+        <button class="board-share-close" onclick="closeBoardShare()" title="Đóng (Esc)">✕</button>
+      </div>
+    </div>
+    <div class="board-share-toolbar">
+      <div class="board-share-totals">
+        <span>Dự kiến: <strong>${fmtVND(est)}</strong></span>
+        <span>Thực tế: <strong>${fmtVND(act)}</strong></span>
+        <span>± <strong>${(act - est >= 0 ? '+' : '') + fmtVND(act - est)}</strong></span>
+      </div>
+      <span class="qty-summary">🛒 SL: <strong>${qBuy}</strong> · 📦 Dùng: <strong>${qUse}</strong> · 🏠 Có: <strong>${qHave}</strong>${qNeed > 0 ? ` · 🔥 Cần: <strong style="color:var(--danger)">${qNeed}</strong>` : ''}</span>
+    </div>
+    <div class="board-share-table-wrap">
+      <table class="shop-share">
+        <thead>
+          <tr>
+            <th style="width:16%">Sản phẩm</th>
+            <th style="width:5%">SL mua</th>
+            <th style="width:5%">SL sử dụng</th>
+            <th style="width:5%">🔥 Cần mua</th>
+            <th style="width:5%">Có sẵn</th>
+            <th style="width:11%">Giá dự kiến</th>
+            <th style="width:11%">Giá thực</th>
+            <th style="width:6%">±</th>
+            <th style="width:11%">Link</th>
+            <th style="width:13%">Trạng thái</th>
+            <th style="width:4%"></th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>
+  `;
+  // Lưu sd vào window để copyBoardToMyBoards() dùng
+  window._shareBoardData = sd;
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+window.closeBoardShare = () => {
+  const overlay = document.getElementById('board-share-overlay');
+  overlay.classList.remove('active');
+  document.body.style.overflow = '';
+  window._shareBoardData = null;
+};
+
+// Nút "Sao chép vào bảng của tôi" — tạo bảng mới tên "Sao chép của: [tên gốc]"
+window.copyBoardToMyBoards = () => {
+  const sd = window._shareBoardData;
+  if(!sd) return;
+  const newName = 'Sao chép của: ' + (sd.boardName || 'Bảng không tên');
+  const newBoard = {
+    id: genBoardId(),
+    name: newName,
+    minimized: false,
+    hidden: false,
+    rows: (sd.rows || []).map(r => normalizeRow(r))
+  };
+  shopBoards.push(newBoard);
+  saveBoards();
+  // Đóng lightbox share
+  window.closeBoardShare();
+  // Hiển thị thông báo
+  alert(`Đã sao chép "${newBoard.name}" vào Tab Mua sắm của bạn!`);
+  // Nếu đang ở Tab Feed, tự chuyển sang Tab Mua sắm để user thấy bảng mới
+  switchTab('shop');
+  renderAllBoards();
+  // Scroll đến bảng mới
+  setTimeout(() => {
+    const card = document.querySelector(`[data-board="${newBoard.id}"]`);
+    if(card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
 };
 
 // Cập nhật ô giá theo phần (thousands/last3) — KHÔNG re-render để giữ focus
@@ -2410,7 +2916,13 @@ document.addEventListener('touchend', () => {
 
 // Nhấn ESC để đóng + double-click để reset zoom
 document.addEventListener('keydown', (e) => {
-  if(e.key === 'Escape') closeLightbox();
+  if(e.key === 'Escape') {
+    closeLightbox();
+    closeBoardShare();
+    // Nếu board-picker đang mở → cũng đóng
+    const picker = document.getElementById('board-picker-modal');
+    if(picker && picker.style.display !== 'none') closeBoardPicker();
+  }
 });
 
 document.addEventListener('dblclick', (e) => {
