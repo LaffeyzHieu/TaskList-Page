@@ -1446,6 +1446,7 @@ window.postNow = async () => {
         name: r.name || '',
         qtyBuy: Number(r.qtyBuy) || 0,
         qtyUse: Number(r.qtyUse) || 0,
+        qtyNeed: Number(r.qtyNeed) || 0,
         qtyHave: Number(r.qtyHave) || 0,
         estimated: Number(r.estimated) || 0,
         actual: Number(r.actual) || 0,
@@ -1506,15 +1507,15 @@ function renderPost(id, post){
   if(post.shopData && post.shopData.rows) {
     const sd = post.shopData;
     const rows = sd.rows || [];
-    let est = 0, act = 0, qBuy = 0, qUse = 0, qHave = 0;
+    let est = 0, act = 0, qBuy = 0, qUse = 0, qHave = 0, qNeed = 0;
     rows.forEach(r => {
       est += Number(r.estimated) || 0;
       act += Number(r.actual) || 0;
       qBuy += Number(r.qtyBuy) || 0;
       qUse += Number(r.qtyUse) || 0;
       qHave += Number(r.qtyHave) || 0;
+      qNeed += Number(r.qtyNeed) || 0;
     });
-    const qNeed = Math.max(0, qBuy - qUse - qHave);
     const meta = `${rows.length} dòng · Dự kiến ${fmtVND(est)} · Thực tế ${fmtVND(act)}` +
                  (qNeed > 0 ? ` · 🔥 Cần mua ${qNeed}` : '');
     // Encode dữ liệu vào data attribute để handler lấy lại khi bấm
@@ -1817,8 +1818,14 @@ function loadBoards() {
 }
 
 let shopBoards = loadBoards();
+// Migration qtyNeed: data cũ (chưa có field qtyNeed) → normalize 1 lần
+// để mỗi row có qtyNeed làm field riêng nhập tay
+const needsMigration = shopBoards.some(b => (b.rows || []).some(r => r.qtyNeed === undefined));
+if(needsMigration) {
+  shopBoards = shopBoards.map(b => normalizeBoard(b));
+}
 // Sau khi load, nếu migration đã chạy → lưu lại để các lần sau đọc từ shopBoards
-if(shopBoards.length > 0 && !localStorage.getItem('shopBoards')) {
+if(shopBoards.length > 0 && (needsMigration || !localStorage.getItem('shopBoards'))) {
   saveBoards();
 }
 
@@ -1967,6 +1974,7 @@ window.exportShopJSON = () => {
         name: r.name || '',
         qtyBuy: Number(r.qtyBuy) || 0,
         qtyUse: Number(r.qtyUse) || 0,
+        qtyNeed: Number(r.qtyNeed) || 0,
         qtyHave: Number(r.qtyHave) || 0,
         estimated: Number(r.estimated) || 0,
         actual: Number(r.actual) || 0,
@@ -2062,12 +2070,18 @@ function normalizeBoard(b) {
 }
 
 // Chuẩn hoá 1 row từ JSON
+// qtyNeed: nếu data cũ chưa có field này → tính 1 lần theo công thức cũ
+// (SL mua − SL dùng − Có sẵn) làm giá trị khởi đầu, sau đó nhập tay tự do
 function normalizeRow(r) {
+  const qtyBuy = Number(r.qtyBuy) || 0;
+  const qtyUse = Number(r.qtyUse) || 0;
+  const qtyHave = Number(r.qtyHave) || 0;
+  const qtyNeed = (r.qtyNeed !== undefined && r.qtyNeed !== null)
+    ? Math.max(0, Number(r.qtyNeed) || 0)
+    : Math.max(0, qtyBuy - qtyUse - qtyHave);
   return {
     name: r.name || '',
-    qtyBuy: Number(r.qtyBuy) || 0,
-    qtyUse: Number(r.qtyUse) || 0,
-    qtyHave: Number(r.qtyHave) || 0,
+    qtyBuy, qtyUse, qtyHave, qtyNeed,
     estimated: Number(r.estimated) || 0,
     actual: Number(r.actual) || 0,
     link: r.link || '',
@@ -2148,7 +2162,7 @@ window.addShopRow = (boardId) => {
   // Nếu đang minimize, mở rộng để user thấy dòng mới
   const wasMinimized = b.minimized;
   if(wasMinimized) b.minimized = false;
-  b.rows.push({ name:'', estimated:0, actual:0, link:'', status:'searching', lastModified: Date.now() });
+  b.rows.push({ name:'', qtyBuy:0, qtyUse:0, qtyNeed:0, qtyHave:0, estimated:0, actual:0, link:'', status:'searching', lastModified: Date.now() });
   saveBoards();
   // Chỉ re-render bảng đó (không re-render tất cả) — tránh lỗi khi addRow gọi từ input event
   renderAllBoards();
@@ -2175,7 +2189,7 @@ window.addShopRowAndFocus = () => {
   if(!target) { const id = window.addShopBoard(); target = getBoard(id); }
   if(!target) return;
   if(target.minimized) target.minimized = false;
-  target.rows.push({ name:'', estimated:0, actual:0, link:'', status:'searching', lastModified: Date.now() });
+  target.rows.push({ name:'', qtyBuy:0, qtyUse:0, qtyNeed:0, qtyHave:0, estimated:0, actual:0, link:'', status:'searching', lastModified: Date.now() });
   saveBoards();
   renderAllBoards();
   setTimeout(() => {
@@ -2292,15 +2306,15 @@ function renderBoardShareLightbox(sd, author, ptime) {
   const overlay = document.getElementById('board-share-overlay');
   const card = document.getElementById('board-share-card');
   const rows = sd.rows || [];
-  let est = 0, act = 0, qBuy = 0, qUse = 0, qHave = 0;
+  let est = 0, act = 0, qBuy = 0, qUse = 0, qHave = 0, qNeed = 0;
   rows.forEach(r => {
     est += Number(r.estimated) || 0;
     act += Number(r.actual) || 0;
     qBuy += Number(r.qtyBuy) || 0;
     qUse += Number(r.qtyUse) || 0;
     qHave += Number(r.qtyHave) || 0;
+    qNeed += Number(r.qtyNeed) || 0;
   });
-  const qNeed = Math.max(0, qBuy - qUse - qHave);
 
   const rowsHtml = rows.length === 0
     ? `<tr><td colspan="11" style="text-align:center;padding:2rem;color:var(--text-secondary)">Bảng trống</td></tr>`
@@ -2316,7 +2330,7 @@ function renderBoardShareLightbox(sd, author, ptime) {
       const qb = Number(r.qtyBuy) || 0;
       const qu = Number(r.qtyUse) || 0;
       const qh = Number(r.qtyHave) || 0;
-      const qn = Math.max(0, qb - qu - qh);
+      const qn = Number(r.qtyNeed) || 0;
       const link = r.link ? `<a href="${esc(r.link)}" target="_blank" class="shop-link">Mở ↗</a>` : '—';
       return `<tr>
         <td>${esc(r.name || '—')}</td>
@@ -2474,8 +2488,7 @@ window.updateRow = (boardId, i, field, val) => {
   updateLastModifiedCell(boardId, i);
 };
 
-// Cập nhật ô số lượng (qtyBuy / qtyUse / qtyHave)
-// qtyBuy & qtyUse: chỉ lưu; qtyHave: cập nhật cột "Cần mua" (ô chỉ đọc)
+// Cập nhật ô số lượng (qtyBuy / qtyUse / qtyNeed / qtyHave) — tất cả đều nhập tay
 window.updateQty = (boardId, i, field, val) => {
   const b = getBoard(boardId);
   if(!b) return;
@@ -2485,20 +2498,16 @@ window.updateQty = (boardId, i, field, val) => {
   r.lastModified = Date.now();
   saveBoards();
 
-  // Cập nhật ô "Cần mua" (ô chỉ đọc giữa qtyUse và qtyHave) → SL mua − SL dùng − SL có sẵn
-  const card = document.querySelector(`[data-board="${boardId}"]`);
-  if(card) {
-    const tr = card.querySelectorAll('tbody tr')[i];
-    if(tr) {
-      const needCell = tr.querySelector('td.qty-need-cell');
-      if(needCell) {
-        const qBuy = Number(r.qtyBuy) || 0;
-        const qUse = Number(r.qtyUse) || 0;
-        const qHave = Number(r.qtyHave) || 0;
-        const need = Math.max(0, qBuy - qUse - qHave);
-        needCell.textContent = need;
-        needCell.style.color = need > 0 ? 'var(--danger)' : 'var(--text-secondary)';
-        needCell.style.fontWeight = need > 0 ? '700' : '400';
+  // Đổi màu ô "Cần mua" ngay khi gõ (đỏ nếu > 0)
+  if(field === 'qtyNeed') {
+    const card = document.querySelector(`[data-board="${boardId}"]`);
+    if(card) {
+      const tr = card.querySelectorAll('tbody tr')[i];
+      const inp = tr && tr.querySelector('.qty-need-input');
+      if(inp) {
+        const need = Number(r.qtyNeed) || 0;
+        inp.style.color = need > 0 ? 'var(--danger)' : '';
+        inp.style.fontWeight = need > 0 ? '700' : '';
       }
     }
   }
@@ -2511,13 +2520,13 @@ window.updateQty = (boardId, i, field, val) => {
 function updateBoardQtySummary(boardId) {
   const b = getBoard(boardId);
   if(!b) return;
-  let qBuy = 0, qUse = 0, qHave = 0;
+  let qBuy = 0, qUse = 0, qHave = 0, qNeed = 0;
   (b.rows || []).forEach(r => {
     qBuy += Number(r.qtyBuy) || 0;
     qUse += Number(r.qtyUse) || 0;
     qHave += Number(r.qtyHave) || 0;
+    qNeed += Number(r.qtyNeed) || 0;
   });
-  const qNeed = Math.max(0, qBuy - qUse - qHave);
   const card = document.querySelector(`[data-board="${boardId}"]`);
   if(!card) return;
   const sum = card.querySelector('.qty-summary');
@@ -2591,15 +2600,14 @@ function renderBoardCard(b) {
   const hiddenStyle = b.hidden ? 'style="display:none"' : '';
   const rowCount = (b.rows || []).length;
 
-  // Tổng số lượng: mua / dùng / có sẵn
-  let qBuy = 0, qUse = 0, qHave = 0;
+  // Tổng số lượng: mua / dùng / cần mua / có sẵn (cần mua là cột nhập tay)
+  let qBuy = 0, qUse = 0, qHave = 0, qNeed = 0;
   (b.rows || []).forEach(r => {
     qBuy += Number(r.qtyBuy) || 0;
     qUse += Number(r.qtyUse) || 0;
     qHave += Number(r.qtyHave) || 0;
+    qNeed += Number(r.qtyNeed) || 0;
   });
-  // Tính: mua - sử dụng - có sẵn = cần mua thêm
-  const qNeed = Math.max(0, qBuy - qUse - qHave);
 
   const rowsHtml = (b.rows || []).length === 0
     ? `<tr><td colspan="12" style="text-align:center;padding:2rem;color:var(--text-secondary)">Chưa có dòng nào. Bấm "+ Thêm dòng" hoặc Enter ở khoảng trống!</td></tr>`
@@ -2640,7 +2648,7 @@ function renderBoardCard(b) {
             <th style="width:14%">Sản phẩm</th>
             <th style="width:5%" title="Số lượng cần mua">SL mua</th>
             <th style="width:5%" title="Số lượng đã sử dụng">SL sử dụng</th>
-            <th style="width:5%" title="SL mua − SL dùng − SL có sẵn = Cần mua thêm">🔥 Cần mua</th>
+            <th style="width:5%" title="Số lượng cần mua thêm (nhập tay)">🔥 Cần mua</th>
             <th style="width:5%" title="Số lượng có sẵn trong kho">Có sẵn</th>
             <th style="width:11%">Giá dự kiến</th>
             <th style="width:11%">Giá thực</th>
@@ -2672,9 +2680,9 @@ function renderRow(boardId, r, i) {
   const qtyBuy = Number(r.qtyBuy) || 0;
   const qtyUse = Number(r.qtyUse) || 0;
   const qtyHave = Number(r.qtyHave) || 0;
-  // Tô màu nền nhẹ cho ô "Cần mua" nếu SL mua > sử dụng + có sẵn
-  const qNeed = Math.max(0, qtyBuy - qtyUse - qtyHave);
-  const qtyNeedStyle = qNeed > 0 ? 'color:var(--danger);font-weight:700;' : 'color:var(--text-secondary);';
+  // Ô "Cần mua" giờ là field riêng, nhập tay như các ô khác
+  const qtyNeed = Number(r.qtyNeed) || 0;
+  const qtyNeedStyle = qtyNeed > 0 ? 'color:var(--danger);font-weight:700;' : '';
 
   const diff = (r.estimated && r.actual) ? act - est : null;
   const diffHtml = diff !== null
@@ -2693,7 +2701,7 @@ function renderRow(boardId, r, i) {
     <td><input class="shop-input" placeholder="Tên sản phẩm..." value="${esc(r.name||'')}" oninput="updateRow('${boardId}',${i},'name',this.value)"${entBlur}></td>
     <td class="qty-cell"><input type="number" min="0" inputmode="numeric" class="qty-input" placeholder="0" value="${qtyBuy || ''}" oninput="updateQty('${boardId}',${i},'qtyBuy',this.value)" title="Số lượng cần mua"${entBlur}></td>
     <td class="qty-cell"><input type="number" min="0" inputmode="numeric" class="qty-input" placeholder="0" value="${qtyUse || ''}" oninput="updateQty('${boardId}',${i},'qtyUse',this.value)" title="Số lượng đã sử dụng"${entBlur}></td>
-    <td class="qty-cell qty-need-cell" style="${qtyNeedStyle}padding:6px 8px;font-size:14px;font-variant-numeric:tabular-nums;" title="SL mua − SL dùng − SL có sẵn = Cần mua thêm">${qNeed}</td>
+    <td class="qty-cell"><input type="number" min="0" inputmode="numeric" class="qty-input qty-need-input" placeholder="0" value="${qtyNeed || ''}" style="${qtyNeedStyle}" oninput="updateQty('${boardId}',${i},'qtyNeed',this.value)" title="Số lượng cần mua thêm"${entBlur}></td>
     <td><input type="number" class="shop-input qty-have-input" min="0" inputmode="numeric" placeholder="0" value="${qtyHave || ''}" title="Số lượng có sẵn trong kho" oninput="updateQty('${boardId}',${i},'qtyHave',this.value)"${entBlur} style="text-align:center;max-width:70px;"></td>
     <td><div class="price-split">
       <input type="number" class="shop-input price-thousands" placeholder="0" value="${estK || ''}" oninput="setPricePart('${boardId}',${i},'estimated','thousands',this.value)"${entBlur}>
