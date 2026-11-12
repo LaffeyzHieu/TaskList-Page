@@ -756,6 +756,55 @@
   }
   .qty-summary strong { color: var(--text-color); font-variant-numeric: tabular-nums; }
 
+  /* Badge đếm hoàn tất / chưa hoàn tất */
+  .done-count {
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 3px 10px;
+    border-radius: 99px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .done-count strong { font-variant-numeric: tabular-nums; }
+  .done-count .n-done { color: var(--success); }
+  .done-count .n-todo { color: var(--text-color); }
+
+  /* Cột "Hoàn tất" */
+  td.done-cell { text-align: center; width: 64px; }
+  .done-check {
+    width: 20px; height: 20px;
+    cursor: pointer;
+    accent-color: var(--success);
+    vertical-align: middle;
+  }
+  /* Dòng đã hoàn tất: gạch ngang + mờ/blur nhẹ.
+     Ô "Hoàn tất" và tay kéo giữ nguyên rõ nét để còn untick được. */
+  table.shop tr.row-done td:not(.done-cell):not(.drag-handle) {
+    opacity: 0.5;
+    filter: blur(1px);
+    transition: opacity .2s, filter .2s;
+  }
+  /* Rê chuột vào / đang sửa 1 ô → ô đó rõ lại để đọc và sửa được */
+  table.shop tr.row-done td:not(.done-cell):not(.drag-handle):hover,
+  table.shop tr.row-done td:not(.done-cell):not(.drag-handle):focus-within {
+    opacity: 0.85;
+    filter: none;
+  }
+  table.shop tr.row-done .shop-input,
+  table.shop tr.row-done .qty-input,
+  table.shop tr.row-done .status-select,
+  table.shop tr.row-done .diff-cell,
+  table.shop tr.row-done .last-modified {
+    text-decoration: line-through;
+  }
+  table.shop-share tr.row-done td:not(.done-cell) {
+    opacity: 0.5;
+    text-decoration: line-through;
+  }
+  table.shop-share td.done-cell { text-align: center; }
+
   /* Empty boards state */
   .boards-empty {
     text-align: center;
@@ -1175,6 +1224,7 @@
           <span>📊 Tổng dự kiến: <strong id="grand-total-estimated">0₫</strong></span>
           <span>Tổng thực tế: <strong id="grand-total-actual">0₫</strong></span>
           <span id="grand-total-diff-wrap">Chênh lệch: <strong id="grand-total-diff" class="diff-pos">0₫</strong></span>
+          <span title="Tổng số dòng đã / chưa hoàn tất ở các bảng đang hiện">✅ Hoàn tất: <strong id="grand-done" class="diff-pos">0</strong> · ⏳ Chưa: <strong id="grand-undone">0</strong></span>
         </div>
         <div class="shop-toolbar-actions">
           <button class="btn btn-ghost" onclick="toggleBoardsList()" id="boards-list-btn" title="Hiện/ẩn danh sách bảng">📋 Hiện bảng</button>
@@ -1448,6 +1498,7 @@ window.postNow = async () => {
         qtyUse: Number(r.qtyUse) || 0,
         qtyNeed: Number(r.qtyNeed) || 0,
         qtyHave: Number(r.qtyHave) || 0,
+        done: !!r.done,
         estimated: Number(r.estimated) || 0,
         actual: Number(r.actual) || 0,
         link: r.link || '',
@@ -1848,14 +1899,27 @@ function boardTotals(board) {
   return { est, act, diff: act - est };
 }
 
+// Đếm số dòng đã / chưa hoàn tất của 1 bảng
+function boardDoneCounts(board) {
+  const rows = board.rows || [];
+  const done = rows.filter(r => r.done).length;
+  return { done, todo: rows.length - done };
+}
+
 // Tính tổng tất cả các bảng KHÔNG ẩn (visible), hiển thị ở thanh trên cùng
 function calcGrandTotals() {
-  let est = 0, act = 0;
+  let est = 0, act = 0, nDone = 0, nTodo = 0;
   shopBoards.forEach(b => {
     if(b.hidden) return;
     const t = boardTotals(b);
     est += t.est; act += t.act;
+    const c = boardDoneCounts(b);
+    nDone += c.done; nTodo += c.todo;
   });
+  const gd = document.getElementById('grand-done');
+  const gt = document.getElementById('grand-undone');
+  if(gd) gd.textContent = nDone;
+  if(gt) gt.textContent = nTodo;
   document.getElementById('grand-total-estimated').textContent = fmtVND(est);
   document.getElementById('grand-total-actual').textContent    = fmtVND(act);
   const diff = act - est;
@@ -1976,6 +2040,7 @@ window.exportShopJSON = () => {
         qtyUse: Number(r.qtyUse) || 0,
         qtyNeed: Number(r.qtyNeed) || 0,
         qtyHave: Number(r.qtyHave) || 0,
+        done: !!r.done,
         estimated: Number(r.estimated) || 0,
         actual: Number(r.actual) || 0,
         link: r.link || '',
@@ -2082,6 +2147,7 @@ function normalizeRow(r) {
   return {
     name: r.name || '',
     qtyBuy, qtyUse, qtyHave, qtyNeed,
+    done: !!r.done,
     estimated: Number(r.estimated) || 0,
     actual: Number(r.actual) || 0,
     link: r.link || '',
@@ -2162,7 +2228,7 @@ window.addShopRow = (boardId) => {
   // Nếu đang minimize, mở rộng để user thấy dòng mới
   const wasMinimized = b.minimized;
   if(wasMinimized) b.minimized = false;
-  b.rows.push({ name:'', qtyBuy:0, qtyUse:0, qtyNeed:0, qtyHave:0, estimated:0, actual:0, link:'', status:'searching', lastModified: Date.now() });
+  b.rows.push({ name:'', qtyBuy:0, qtyUse:0, qtyNeed:0, qtyHave:0, done:false, estimated:0, actual:0, link:'', status:'searching', lastModified: Date.now() });
   saveBoards();
   // Chỉ re-render bảng đó (không re-render tất cả) — tránh lỗi khi addRow gọi từ input event
   renderAllBoards();
@@ -2189,7 +2255,7 @@ window.addShopRowAndFocus = () => {
   if(!target) { const id = window.addShopBoard(); target = getBoard(id); }
   if(!target) return;
   if(target.minimized) target.minimized = false;
-  target.rows.push({ name:'', qtyBuy:0, qtyUse:0, qtyNeed:0, qtyHave:0, estimated:0, actual:0, link:'', status:'searching', lastModified: Date.now() });
+  target.rows.push({ name:'', qtyBuy:0, qtyUse:0, qtyNeed:0, qtyHave:0, done:false, estimated:0, actual:0, link:'', status:'searching', lastModified: Date.now() });
   saveBoards();
   renderAllBoards();
   setTimeout(() => {
@@ -2307,6 +2373,8 @@ function renderBoardShareLightbox(sd, author, ptime) {
   const card = document.getElementById('board-share-card');
   const rows = sd.rows || [];
   let est = 0, act = 0, qBuy = 0, qUse = 0, qHave = 0, qNeed = 0;
+  const nDone = rows.filter(r => r.done).length;
+  const nTodo = rows.length - nDone;
   rows.forEach(r => {
     est += Number(r.estimated) || 0;
     act += Number(r.actual) || 0;
@@ -2317,7 +2385,7 @@ function renderBoardShareLightbox(sd, author, ptime) {
   });
 
   const rowsHtml = rows.length === 0
-    ? `<tr><td colspan="11" style="text-align:center;padding:2rem;color:var(--text-secondary)">Bảng trống</td></tr>`
+    ? `<tr><td colspan="12" style="text-align:center;padding:2rem;color:var(--text-secondary)">Bảng trống</td></tr>`
     : rows.map(r => {
       const e = Number(r.estimated) || 0;
       const a = Number(r.actual) || 0;
@@ -2332,7 +2400,8 @@ function renderBoardShareLightbox(sd, author, ptime) {
       const qh = Number(r.qtyHave) || 0;
       const qn = Number(r.qtyNeed) || 0;
       const link = r.link ? `<a href="${esc(r.link)}" target="_blank" class="shop-link">Mở ↗</a>` : '—';
-      return `<tr>
+      return `<tr class="${r.done ? 'row-done' : ''}">
+        <td class="done-cell">${r.done ? '✅' : '⬜'}</td>
         <td>${esc(r.name || '—')}</td>
         <td class="qty-cell">${qb || '—'}</td>
         <td class="qty-cell">${qu || '—'}</td>
@@ -2367,12 +2436,14 @@ function renderBoardShareLightbox(sd, author, ptime) {
         <span>Thực tế: <strong>${fmtVND(act)}</strong></span>
         <span>± <strong>${(act - est >= 0 ? '+' : '') + fmtVND(act - est)}</strong></span>
       </div>
+      <span class="done-count">✅ <strong class="n-done">${nDone}</strong> · ⏳ <strong class="n-todo">${nTodo}</strong></span>
       <span class="qty-summary">🛒 SL: <strong>${qBuy}</strong> · 📦 Dùng: <strong>${qUse}</strong> · 🏠 Có: <strong>${qHave}</strong>${qNeed > 0 ? ` · 🔥 Cần: <strong style="color:var(--danger)">${qNeed}</strong>` : ''}</span>
     </div>
     <div class="board-share-table-wrap">
       <table class="shop-share">
         <thead>
           <tr>
+            <th style="width:6%">Hoàn tất</th>
             <th style="width:16%">Sản phẩm</th>
             <th style="width:5%">SL mua</th>
             <th style="width:5%">SL sử dụng</th>
@@ -2516,6 +2587,39 @@ window.updateQty = (boardId, i, field, val) => {
   updateLastModifiedCell(boardId, i);
 };
 
+// Tick / untick "Hoàn tất" — KHÔNG re-render cả bảng để giữ focus và vị trí cuộn
+window.toggleRowDone = (boardId, i, checked) => {
+  const b = getBoard(boardId);
+  if(!b) return;
+  const r = b.rows[i];
+  if(!r) return;
+  r.done = !!checked;
+  r.lastModified = Date.now();
+  saveBoards();
+
+  const card = document.querySelector(`[data-board="${boardId}"]`);
+  const tr = card && card.querySelectorAll('tbody tr')[i];
+  if(tr) {
+    tr.classList.toggle('row-done', r.done);
+    const cb = tr.querySelector('.done-check');
+    if(cb) cb.title = r.done ? 'Bỏ hoàn tất' : 'Đánh dấu hoàn tất';
+  }
+  updateBoardDoneCount(boardId);
+  updateLastModifiedCell(boardId, i);
+  calcGrandTotals();
+};
+
+// Cập nhật badge ✅ xong · ⏳ chưa ở header 1 bảng
+function updateBoardDoneCount(boardId) {
+  const b = getBoard(boardId);
+  const card = document.querySelector(`[data-board="${boardId}"]`);
+  if(!b || !card) return;
+  const el = card.querySelector('[data-done-count]');
+  if(!el) return;
+  const c = boardDoneCounts(b);
+  el.innerHTML = `✅ <strong class="n-done">${c.done}</strong> · ⏳ <strong class="n-todo">${c.todo}</strong>`;
+}
+
 // Cập nhật badge "SL: ... Dùng: ... Có: ... Cần: ..." ở header bảng
 function updateBoardQtySummary(boardId) {
   const b = getBoard(boardId);
@@ -2599,6 +2703,7 @@ function renderBoardCard(b) {
   const minCls = b.minimized ? 'minimized' : '';
   const hiddenStyle = b.hidden ? 'style="display:none"' : '';
   const rowCount = (b.rows || []).length;
+  const dc = boardDoneCounts(b);
 
   // Tổng số lượng: mua / dùng / cần mua / có sẵn (cần mua là cột nhập tay)
   let qBuy = 0, qUse = 0, qHave = 0, qNeed = 0;
@@ -2610,7 +2715,7 @@ function renderBoardCard(b) {
   });
 
   const rowsHtml = (b.rows || []).length === 0
-    ? `<tr><td colspan="12" style="text-align:center;padding:2rem;color:var(--text-secondary)">Chưa có dòng nào. Bấm "+ Thêm dòng" hoặc Enter ở khoảng trống!</td></tr>`
+    ? `<tr><td colspan="14" style="text-align:center;padding:2rem;color:var(--text-secondary)">Chưa có dòng nào. Bấm "+ Thêm dòng" hoặc Enter ở khoảng trống!</td></tr>`
     : (b.rows || []).map((r, i) => renderRow(b.id, r, i)).join('');
 
   return `<div class="board-card ${minCls}" data-board="${b.id}" ${hiddenStyle}>
@@ -2623,6 +2728,7 @@ function renderBoardCard(b) {
                onkeydown="if(event.key==='Enter') this.blur()"
                maxlength="60">
         <span class="board-rows-count" title="Số dòng">${rowCount} dòng</span>
+        <span class="done-count" data-done-count title="Số dòng đã / chưa hoàn tất">✅ <strong class="n-done">${dc.done}</strong> · ⏳ <strong class="n-todo">${dc.todo}</strong></span>
       </div>
       <div class="board-totals" title="Tổng tiền riêng của bảng này">
         <span>Dự kiến: <strong data-totals="est">${fmtVND(t.est)}</strong></span>
@@ -2645,6 +2751,7 @@ function renderBoardCard(b) {
         <thead>
           <tr>
             <th style="width:34px"></th>
+            <th style="width:64px" title="Tick để đánh dấu đã hoàn tất">Hoàn tất</th>
             <th style="width:14%">Sản phẩm</th>
             <th style="width:5%" title="Số lượng cần mua">SL mua</th>
             <th style="width:5%" title="Số lượng đã sử dụng">SL sử dụng</th>
@@ -2696,8 +2803,9 @@ function renderRow(boardId, r, i) {
 
   const entBlur = ` onkeydown="if(event.key==='Enter') this.blur()"`;
   const trDragOverDrop = ` ondragover="onRowDragOver(event,'${boardId}',${i})" ondragleave="onRowDragLeave(event)" ondrop="onRowDrop(event,'${boardId}',${i})"`;
-  return `<tr data-i="${i}"${trDragOverDrop}>
+  return `<tr data-i="${i}" class="${r.done ? 'row-done' : ''}"${trDragOverDrop}>
     <td class="drag-handle" draggable="true" ondragstart="onRowDragStart(event,'${boardId}',${i})" ondragend="onRowDragEnd(event)" title="Kéo để di chuyển dòng">⠿</td>
+    <td class="done-cell"><input type="checkbox" class="done-check" ${r.done ? 'checked' : ''} onchange="toggleRowDone('${boardId}',${i},this.checked)" title="${r.done ? 'Bỏ hoàn tất' : 'Đánh dấu hoàn tất'}"></td>
     <td><input class="shop-input" placeholder="Tên sản phẩm..." value="${esc(r.name||'')}" oninput="updateRow('${boardId}',${i},'name',this.value)"${entBlur}></td>
     <td class="qty-cell"><input type="number" min="0" inputmode="numeric" class="qty-input" placeholder="0" value="${qtyBuy || ''}" oninput="updateQty('${boardId}',${i},'qtyBuy',this.value)" title="Số lượng cần mua"${entBlur}></td>
     <td class="qty-cell"><input type="number" min="0" inputmode="numeric" class="qty-input" placeholder="0" value="${qtyUse || ''}" oninput="updateQty('${boardId}',${i},'qtyUse',this.value)" title="Số lượng đã sử dụng"${entBlur}></td>
