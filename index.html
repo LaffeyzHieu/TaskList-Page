@@ -1868,7 +1868,20 @@ function loadBoards() {
   return [];
 }
 
+// Bảng nào trùng id với bảng đứng trước → cấp id mới (import trùng file
+// sinh ra bản sao cùng id nên xóa/sửa 1 bảng sẽ dính cả bảng kia)
+function dedupeBoardIds(list) {
+  const seen = new Set();
+  list.forEach(b => {
+    if(!b.id || seen.has(b.id)) b.id = genBoardId();
+    seen.add(b.id);
+  });
+  return list;
+}
 let shopBoards = loadBoards();
+const idsBefore = shopBoards.map(b => b.id).join('|');
+dedupeBoardIds(shopBoards);
+const idsFixed = idsBefore !== shopBoards.map(b => b.id).join('|');
 // Migration qtyNeed: data cũ (chưa có field qtyNeed) → normalize 1 lần
 // để mỗi row có qtyNeed làm field riêng nhập tay
 const needsMigration = shopBoards.some(b => (b.rows || []).some(r => r.qtyNeed === undefined));
@@ -1876,7 +1889,7 @@ if(needsMigration) {
   shopBoards = shopBoards.map(b => normalizeBoard(b));
 }
 // Sau khi load, nếu migration đã chạy → lưu lại để các lần sau đọc từ shopBoards
-if(shopBoards.length > 0 && (needsMigration || !localStorage.getItem('shopBoards'))) {
+if(shopBoards.length > 0 && (needsMigration || idsFixed || !localStorage.getItem('shopBoards'))) {
   saveBoards();
 }
 
@@ -2111,7 +2124,7 @@ window.importShopJSON = (event) => {
     );
     if(mode) {
       // Gộp
-      shopBoards = shopBoards.concat(incoming);
+      shopBoards = dedupeBoardIds(shopBoards.concat(incoming));
     } else {
       // Ghi đè
       shopBoards = incoming;
